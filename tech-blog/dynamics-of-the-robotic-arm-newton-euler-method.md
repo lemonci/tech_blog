@@ -66,3 +66,37 @@ $$\overrightarrow{\Phi} = \Sigma_i m_i \overrightarrow{p_i} \times \overrightarr
 
 Notice that we have replaced the linear velocity with a cross product of the angular velocity and the position vector, which is the same for every point on the rigid body, so we can take it outside the summation. Writing the above equation in volume integration form, we have:
 
+$$\begin{eqnarray}   \overrightarrow{\Phi} &=& \int_V \overrightarrow{p} \times (\overrightarrow{\omega} \times \overrightarrow{p} ) \rho d v \\ \overrightarrow{\Phi} &=& \int_V \overrightarrow{p} \times ( - \overrightarrow{p} \times \overrightarrow{\omega} ) \rho d v \\  \overrightarrow{\Phi} &=& \left[ \int_V - \hat{p} \hat{p}\rho d v  \right] \overrightarrow{\omega}  \end{eqnarray}$$
+
+p wedge in this context is called the cross product operator, which converts the cross product of two vectors into a matrix-by-vector operation. In our 3×1 vector case:
+
+$$\begin{eqnarray}   \overrightarrow{p} \times \overrightarrow{\omega} &=& \left( \begin{vmatrix} p_y & p_z\\ \omega_y & \omega_z \end{vmatrix}, - \begin{vmatrix} p_x & p_z\\ \omega_x & \omega_z \end{vmatrix} , \begin{vmatrix} p_x & p_y\\ \omega_x & \omega_y \end{vmatrix} \right) \\  \overrightarrow{p} \times \overrightarrow{\omega} &=& \begin{bmatrix} 0 & -p_z & p_y\\ p_z & 0 & -p_x \\ -p_y & p_x & 0 \end{bmatrix}  \begin{bmatrix} \omega_x\\ \omega_y\\ \omega_z \end{bmatrix} \\  \hat{p} &=& \begin{bmatrix} 0 & -p_z & p_y\\ p_z & 0 & -p_x \\ -p_y & p_x & 0 \end{bmatrix} \end{eqnarray}$$
+
+Here, we define the part in parentheses \[] in the previous integral equation as the inertia tensor $$I$$:
+
+$$I = \left[ \int_V - \hat{p} \hat{p} \rho d v \right]$$.
+
+Finally, the expression for the angular momentum of the rigid body is $$\Phi = I \overrightarrow{\omega}$$
+
+Similar to force as the rate of change of linear momentum, the **torque** applied to a rigid body is defined as **the rate of change of the angular momentum of the rigid body**. To find the relationship between torque and angular velocity and angular acceleration, we can derive both sides of the above equation:
+
+$$\begin{eqnarray}  \frac{d}{dt}\Phi &=& \frac{d}{dt} I \overrightarrow{\omega} \\ \overrightarrow{\tau} &=& I \frac{d\overrightarrow{\omega}}{dt} + \frac{dI}{dt} \overrightarrow{\omega} \end{eqnarray}$$
+
+$$\frac {d \omega}{dt}$$ is obviously the angular acceleration of the rigid body, and what is $$\frac {I \omega}{dt}$$? It is the derivative of the tensor with respect to time, which is not necessarily equal to 0!
+
+The tensor is the volume fraction of each point on a rigid body, after certain operations imposed on the position vectors with respect to a stationary frame of reference, and that these position vectors rotate as the rigid body rotates; similarly, the linear velocity of a point is equal to the forked product of the angular velocity and the position vectors:
+
+$$\begin{eqnarray}  \overrightarrow{\tau} &=& I \overrightarrow{\alpha} + \overrightarrow{\omega} \times I \overrightarrow{\omega}  \end{eqnarray}$$
+
+Summarize rigid body dynamics in a table:
+
+
+
+|                  | Linear                    | Angular                                                                                                          |
+| ---------------- | ------------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| Inertia          | Mass $$m$$                | Tensor $$I$$                                                                                                     |
+| Momentum         | $$mv$$                    | $$I \omega$$                                                                                                     |
+| Force            | Force $$F$$               | Torque $$\tau$$                                                                                                  |
+| Accelerate       | Linear acceleration $$a$$ | Angular acceleration $$\alpha$$                                                                                  |
+| Eular's equation | $$F = ma$$                | $$\overrightarrow{\tau} = I \overrightarrow{\alpha} + \overrightarrow{\omega} \times I \overrightarrow{\omega}$$ |
+
