@@ -90,8 +90,6 @@ $$\begin{eqnarray}  \overrightarrow{\tau} &=& I \overrightarrow{\alpha} + \overr
 
 Summarize rigid body dynamics in a table:
 
-
-
 |                  | Linear                    | Angular                                                                                                          |
 | ---------------- | ------------------------- | ---------------------------------------------------------------------------------------------------------------- |
 | Inertia          | Mass $$m$$                | Tensor $$I$$                                                                                                     |
@@ -99,4 +97,27 @@ Summarize rigid body dynamics in a table:
 | Force            | Force $$F$$               | Torque $$\tau$$                                                                                                  |
 | Accelerate       | Linear acceleration $$a$$ | Angular acceleration $$\alpha$$                                                                                  |
 | Eular's equation | $$F = ma$$                | $$\overrightarrow{\tau} = I \overrightarrow{\alpha} + \overrightarrow{\omega} \times I \overrightarrow{\omega}$$ |
+
+## Deriving robotic arm dynamics using Newton's Euler method
+
+After spending so much time on the Euler equations of motion for rigid body dynamics, we can finally take a look at the dynamics of a robotic arm. The ultimate goal of solving the dynamics of a robotic arm is to find out how much torque (for rotational joints) or force (for translational joints) should be applied by the actuators at each joint if we need to control the robot to follow a certain trajectory (don't forget that a trajectory is a function of position in respect to time).
+
+To derive the dynamics of a robotic arm using Newton - Euler method, two steps are need:
+
+1. **Forward propagation**: starting from the base, we calculate the velocity and acceleration of each linkage in turn, all the way to the end-effector; and then:
+2. **Backward propagation**: starting from the external force on the end-effector, we calculate the torque/force of each joint in turn
+
+The Newtonian Eulerian method for deriving robotic arm dynamics is a recursive algorithm.
+
+### **Forward propagation**
+
+First look at the angular velocity of the connecting rod, the angular velocity of each connecting rod is equal to the angular velocity of the last connecting rod plus the angular velocity of its joints (0 for translational joints); according to this we can get the formula for the transfer of angular velocity of the connecting rod. After derivating of both sides of the formula, we can further get the formula of angular acceleration:
+
+$$\begin{eqnarray}   \omega_{i+1} &=& \omega_i + \dot{\theta_{i+1}}Z_{i+1} \\ \dot{\omega}_{i+1} &=& \dot{\omega}_i + \dot{\theta}_{i+1}(\omega_i \times Z_{i+1}) + \ddot{\theta}_{i+1} Z_{i+1}  \end{eqnarray}$$
+
+Where $$\theta$$ is the joint position (angle of the rotated joint) and $$Z$$ is the rotation axis of the joint. Note that the above equation does not indicate the reference frame used for each vector. In practice, it is necessary to use a rotation matrix to map vectors from different reference frames to the same reference frame.
+
+For linear velocity, the linear velocity of each link is equal to the sum of the linear velocity of the previous link (center of mass), the linear velocity caused by the rotation of the previous link, and the linear velocity of the translational joint. Derivation on both sides of the equation gives the transfer equation for linear acceleration.
+
+$$\begin{eqnarray}  v_{i+1} &=& v_i + \omega_i \times p_{i+1} + \dot{d}_{i+1}Z_{i+1}\\ \ddot{v}_{i+1} &=& \ddot{v}_i + \ddot{\omega}_i \times p_{i+1} + \omega_i \times (\omega_i \times p_{i+1}) + \dot{d}_{i+1} {\omega}_i \times Z_{i+1} + \ddot{d}_{i+1} Z_{i+1} \end{eqnarray}$$
 
