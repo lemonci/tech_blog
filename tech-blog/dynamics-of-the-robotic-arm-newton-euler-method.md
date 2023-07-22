@@ -44,7 +44,7 @@ Euler's second law describes the relationship between the angular motion of a ri
 
 Moment is a vector, not a scalar, the direction points to the direction of rotation of the object. It is much clearer to memorize this relationship as a cross product! Also note the order of the cross multiplication.
 
-$$\overrightarrow{N} = \overrightarrow{p} \times \overrightarrow{F}$$![](<../.gitbook/assets/image (13).png>)
+$$\overrightarrow{N} = \overrightarrow{p} \times \overrightarrow{F}$$![](<../.gitbook/assets/image (13) (1).png>)
 
 Similar to linear momentum, we also introduce the concept of angular momentum: the angular momentum of a particle with respect to a fixed point is equal to the product of its mass and its angular velocity. Obviously, the linear velocity of the particle (with respect to this fixed point)  is equal to the cross product of the angular velocity (with respect to this fixed point), and the position vector from the fixed point to the particle, and : $$\overrightarrow{v} = \overrightarrow{p} \times \overrightarrow{\omega}$$
 
@@ -139,5 +139,9 @@ $$\begin{equation} \overrightarrow{\tau}_i =  \begin{cases}       f_i Z_i & \tex
 
 For DOF-6 robot arms:
 
-$$\text{Outward iterations: } i:0 \rightarrow 5 \\ \begin{eqnarray} ^{i+1}\omega_{i+1} &=& ^{i+1}_i R^i \omega_i + \dot{\theta}_{i+1} {^{i+1}Z_{i+1}} \\ ^{i+1}\dot{\omega}_{i+1} &=& ^{i+1}_i R \dot{\omega}_i +  ^{i+1}_i R \omega_i \times ^{i+1} Z_{i+1} \dot{\theta}_{i+1} + \ddot{\theta}_{i+1}{^{i+1}Z_{i+1}}  \end{eqnarray}$$
+$$\text{Outward iterations: } i:0 \rightarrow 5 \\ \begin{eqnarray} ^{i+1}\omega_{i+1} &=& ^{i+1}_i R^i \omega_i + \dot{\theta}_{i+1} {^{i+1}Z_{i+1}} \\ ^{i+1}\dot{\omega}_{i+1} &=& ^{i+1}_i R \dot{\omega}_i +  ^{i+1}_i R \omega_i \times ^{i+1} Z_{i+1} \dot{\theta}_{i+1} + \ddot{\theta}_{i+1}{^{i+1}Z_{i+1}} \\ ^{i+1}\dot{v}_{i+1} &=& ^{i+1}_i R ( ^i \dot{\omega}_i \times ^i p_{i+1} + ^i \omega_i \times (^i \omega_i \times {^{i+1}p_{C_{i+1}}})+^{i+1}\ddot{v}_{i+1}\\ ^{i+1}\dot{v}_{C_{i+1}} &=& ^{i+1} \dot{\omega}_{i+1} \times ^{i+1} p_{C_{i+1}} + ^{i+1} \omega_{i+1} \times (^{i+1} \omega_{i+1} \times ^{i+1} p_{C_{i+1}})+^{i+1} \dot{v}_{i+1} \\ ^{i+1}F_{i+1} &=& m_{i+1} {^{i+1}\dot{v}_{C_{i+1}}} \\ ^{i+1}N_{i+1} &=& ^{C_{i+1}}I_{i+1} ^{i+1}\dot{\omega}_{i+1} + ^{i+1}\omega_{i+1} \times ^{C_{i+1}}I_{i+1} {^{i+1}\omega_{i+1}} \end{eqnarray}$$$$\text{Inward iterations: } i:6 \rightarrow 1 \\ \begin{eqnarray} ^i f_i &=& ^i_{i-1}R^{i-1} n_{i-1}+ i^p_{c_i} \times i^F_i +i^p_{i-1} \times ^i_{i-1}R^{i-1}f_{i-1} \\\tau_i &=&  ^i n^T_i  {^iZ_i}  \end{eqnarray}$$
+
+<figure><img src="../.gitbook/assets/image (13).png" alt=""><figcaption></figcaption></figure>
+
+
 
