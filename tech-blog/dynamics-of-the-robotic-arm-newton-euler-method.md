@@ -131,7 +131,7 @@ $$\begin{eqnarray}  F_i &=& m_i \dot{v}_i \\ N_i &=& I_{C_i} \dot{\omega}_i  + \
 
 Now let's analyze the forces on each connecting rod. From Newton's third law, we know that forces act on each other, so we can use $$F_i$$ to represent the force each connecting rod receives from the previous connecting rod, and $$N_i$$ to represent the moment it receives.
 
-![](../.gitbook/assets/640.jpg)$$\begin{eqnarray}  F_i &=& f_i - f_{i+1}\\ N_i &=& n_i - n_{i+1} + (-p_c) \times f_i + (p_{i+1} - p_c) \times (-f_{i+1}) \end{eqnarray}$$
+![](<../.gitbook/assets/640 (1).jpg>)$$\begin{eqnarray}  F_i &=& f_i - f_{i+1}\\ N_i &=& n_i - n_{i+1} + (-p_c) \times f_i + (p_{i+1} - p_c) \times (-f_{i+1}) \end{eqnarray}$$
 
 Then the force/torque at each joint is:
 
@@ -141,7 +141,18 @@ For DOF-6 robot arms:
 
 $$\text{Outward iterations: } i:0 \rightarrow 5 \\ \begin{eqnarray} ^{i+1}\omega_{i+1} &=& ^{i+1}_i R^i \omega_i + \dot{\theta}_{i+1} {^{i+1}Z_{i+1}} \\ ^{i+1}\dot{\omega}_{i+1} &=& ^{i+1}_i R \dot{\omega}_i +  ^{i+1}_i R \omega_i \times ^{i+1} Z_{i+1} \dot{\theta}_{i+1} + \ddot{\theta}_{i+1}{^{i+1}Z_{i+1}} \\ ^{i+1}\dot{v}_{i+1} &=& ^{i+1}_i R ( ^i \dot{\omega}_i \times ^i p_{i+1} + ^i \omega_i \times (^i \omega_i \times {^{i+1}p_{C_{i+1}}})+^{i+1}\ddot{v}_{i+1}\\ ^{i+1}\dot{v}_{C_{i+1}} &=& ^{i+1} \dot{\omega}_{i+1} \times ^{i+1} p_{C_{i+1}} + ^{i+1} \omega_{i+1} \times (^{i+1} \omega_{i+1} \times ^{i+1} p_{C_{i+1}})+^{i+1} \dot{v}_{i+1} \\ ^{i+1}F_{i+1} &=& m_{i+1} {^{i+1}\dot{v}_{C_{i+1}}} \\ ^{i+1}N_{i+1} &=& ^{C_{i+1}}I_{i+1} ^{i+1}\dot{\omega}_{i+1} + ^{i+1}\omega_{i+1} \times ^{C_{i+1}}I_{i+1} {^{i+1}\omega_{i+1}} \end{eqnarray}$$$$\text{Inward iterations: } i:6 \rightarrow 1 \\ \begin{eqnarray} ^i f_i &=& ^i_{i-1}R^{i-1} n_{i-1}+ i^p_{c_i} \times i^F_i +i^p_{i-1} \times ^i_{i-1}R^{i-1}f_{i-1} \\\tau_i &=&  ^i n^T_i  {^iZ_i}  \end{eqnarray}$$
 
+$$\text{Gravity: set }^0\dot{v}_0 = G$$
+
 <figure><img src="../.gitbook/assets/image (13).png" alt=""><figcaption></figcaption></figure>
 
+### A simple example
 
+In order to better understand the process of solving Newton-Euler recursive method(and how cumbersome the method is lol), here's a simple example - a robotic arm with only one resolute joint:
 
+![](../.gitbook/assets/640.jpg)
+
+where the length of the connecting rod is $$l$$ and the center of mass is positioned at $$l/2$$.
+
+In the forward phase, we can find the velocity, acceleration, and inertial force.
+
+$$\begin{eqnarray} ^1\omega_1 &=& R \cdot ^0\omega_0+ \dot{\theta_1} \cdot ^1Z_1 = 0 + \dot{\theta}_1 \cdot \begin{pmatrix} 0\\ 0\\ \dot{\theta}_1 \end{pmatrix} = \begin{pmatrix} 0\\ 0\\ \dot{\theta}_1 \end{pmatrix} \end{eqnarray}$$
