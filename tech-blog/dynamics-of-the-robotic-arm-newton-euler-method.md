@@ -100,7 +100,7 @@ Summarize rigid body dynamics in a table:
 
 ## Deriving robotic arm dynamics using Newton's Euler method
 
-After spending so much time on the Euler equations of motion for rigid body dynamics, we can finally take a look at the dynamics of a robotic arm. The ultimate goal of solving the dynamics of a robotic arm is to find out how much torque (for rotational joints) or force (for translational joints) should be applied by the actuators at each joint if we need to control the robot to follow a certain trajectory (don't forget that a trajectory is a function of position in respect to time).
+After spending so much time on the Euler equations of motion for rigid body dynamics, we can finally take a look at the dynamics of a robotic arm. The ultimate goal of solving the dynamics of a robotic arm is to find out how much torque (for revolute joints) or force (for prismatic joints) should be applied by the actuators at each joint if we need to control the robot to follow a certain trajectory (don't forget that a trajectory is a function of position in respect to time).
 
 To derive the dynamics of a robotic arm using Newton - Euler method, two steps are need:
 
@@ -111,13 +111,33 @@ The Newtonian Eulerian method for deriving robotic arm dynamics is a recursive a
 
 ### **Forward propagation**
 
-First look at the angular velocity of the connecting rod, the angular velocity of each connecting rod is equal to the angular velocity of the last connecting rod plus the angular velocity of its joints (0 for translational joints); according to this we can get the formula for the transfer of angular velocity of the connecting rod. After derivating of both sides of the formula, we can further get the formula of angular acceleration:
+First look at the angular velocity of the connecting rod, the angular velocity of each connecting rod is equal to the angular velocity of the last connecting rod plus the angular velocity of its joints (0 for prismatic joints); according to this we can get the formula for the transfer of angular velocity of the connecting rod. After derivating of both sides of the formula, we can further get the formula of angular acceleration:
 
 $$\begin{eqnarray}   \omega_{i+1} &=& \omega_i + \dot{\theta_{i+1}}Z_{i+1} \\ \dot{\omega}_{i+1} &=& \dot{\omega}_i + \dot{\theta}_{i+1}(\omega_i \times Z_{i+1}) + \ddot{\theta}_{i+1} Z_{i+1}  \end{eqnarray}$$
 
-Where $$\theta$$ is the joint position (angle of the rotated joint) and $$Z$$ is the rotation axis of the joint. Note that the above equation does not indicate the reference frame used for each vector. In practice, it is necessary to use a rotation matrix to map vectors from different reference frames to the same reference frame.
+Where $$\theta$$ is the joint position (angle of the revolute joint) and $$Z$$ is the revolution axis of the joint. Note that the above equation does not indicate the reference frame used for each vector. In practice, it is necessary to use a rotation matrix to map vectors from different reference frames to the same reference frame.
 
-For linear velocity, the linear velocity of each link is equal to the sum of the linear velocity of the previous link (center of mass), the linear velocity caused by the rotation of the previous link, and the linear velocity of the translational joint. Derivation on both sides of the equation gives the transfer equation for linear acceleration.
+For linear velocity, the linear velocity of each link is equal to the sum of the linear velocity of the previous link (center of mass), the linear velocity caused by the rotation of the previous link, and the linear velocity of the prismatic joint. Derivation on both sides of the equation gives the transfer equation for linear acceleration.
 
 $$\begin{eqnarray}  v_{i+1} &=& v_i + \omega_i \times p_{i+1} + \dot{d}_{i+1}Z_{i+1}\\ \ddot{v}_{i+1} &=& \ddot{v}_i + \ddot{\omega}_i \times p_{i+1} + \omega_i \times (\omega_i \times p_{i+1}) + \dot{d}_{i+1} {\omega}_i \times Z_{i+1} + \ddot{d}_{i+1} Z_{i+1} \end{eqnarray}$$
+
+where $$d_i$$ is the joint position of joint $$i$$ (the prismatic position of the prismatic joint), $$Z$$ is the direction of joint translation, and $$p$$ is the position vector from the center of mass of the previous link to the current link.
+
+With the transfer equations for velocity and acceleration, we can easily find the inertia force and moment of inertia for each linkage based on Euler's equations:
+
+$$\begin{eqnarray}  F_i &=& m_i \dot{v}_i \\ N_i &=& I_{C_i} \dot{\omega}_i  + \omega_i \times I_{C_i} \omega_i \end{eqnarray}$$
+
+### Backward propagation
+
+Now let's analyze the forces on each connecting rod. From Newton's third law, we know that forces act on each other, so we can use $$F_i$$ to represent the force each connecting rod receives from the previous connecting rod, and $$N_i$$ to represent the moment it receives.
+
+![](../.gitbook/assets/640.jpg)$$\begin{eqnarray}  F_i &=& f_i - f_{i+1}\\ N_i &=& n_i - n_{i+1} + (-p_c) \times f_i + (p_{i+1} - p_c) \times (-f_{i+1}) \end{eqnarray}$$
+
+Then the force/torque at each joint is:
+
+$$\begin{equation} \overrightarrow{\tau}_i =  \begin{cases}       f_i Z_i & \text{for prismatic joint} \\       n_i Z_i & \text{for revolute joint}  \end{cases} \end{equation}$$
+
+For DOF-6 robot arms:
+
+$$\text{Outward iterations: } i:0 \rightarrow 5 \\ \begin{eqnarray} ^{i+1}\omega_{i+1} &=& ^{i+1}_i R^i \omega_i + \dot{\theta}_{i+1} {^{i+1}Z_{i+1}} \\ ^{i+1}\dot{\omega}_{i+1} &=& ^{i+1}_i R \dot{\omega}_i +  ^{i+1}_i R \omega_i \times ^{i+1} Z_{i+1} \dot{\theta}_{i+1} + \ddot{\theta}_{i+1}{^{i+1}Z_{i+1}}  \end{eqnarray}$$
 
