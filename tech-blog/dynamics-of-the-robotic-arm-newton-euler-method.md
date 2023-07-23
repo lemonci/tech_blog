@@ -1,3 +1,7 @@
+---
+description: Intuitive in idea, tedious in process
+---
+
 # Dynamics of the robotic arm: Newton - Euler Method
 
 ## Rigid body dynamics
@@ -157,7 +161,12 @@ In the forward phase, we can find the velocity, acceleration, and inertial force
 
 $$\begin{eqnarray} ^1\omega_1 &=& R \cdot ^0\omega_0+ \dot{\theta_1} \cdot ^1Z_1 = 0 + \dot{\theta}_1 \cdot \begin{pmatrix} 0\\ 0\\ \dot{\theta}_1 \end{pmatrix} = \begin{pmatrix} 0\\ 0\\ \dot{\theta}_1 \end{pmatrix} \end{eqnarray}$$
 
-$$\begin{eqnarray} ^1 \dot{\omega}_1 &=& ^1_0R \cdot ^0\dot{\omega}_0 + ^1_0R \cdot ^0\omega_0 \times ^1\omega_1 + \ddot{\theta}_1 \cdot ^1Z_1 = 0 + 0 + \begin{pmatrix} 0\\ 0\\ \ddot{\theta}_1 \end{pmatrix} = \begin{pmatrix} 0\\ 0\\ \ddot{\theta}_1 \end{pmatrix} \end{eqnarray}$$$$\begin{eqnarray} ^1 \dot{v}_1 &=& ^1_0R \cdot(^0\dot{\omega}_0 \times ^0P_1 + ^0\omega_0 \times (^0\omega_0 \times {^0} P_1)+^0\dot{v}_1)=^1_0R \cdot(0+0+-\overrightarrow{G}) =\begin{pmatrix} \sin_1g\\ \cos_1g\\ 0 \end{pmatrix} \end{eqnarray}$$$$\begin{eqnarray} ^1\dot{v}_{C_1} &=&  \begin{pmatrix} 0\\ 0\\ \ddot{\theta}_1 \end{pmatrix} \times \begin{pmatrix} \frac{l}{2}\\ 0\\ 0 \end{pmatrix} + \begin{pmatrix} 0\\ 0\\ \dot{\theta}_1 \end{pmatrix} \times \begin{pmatrix} \begin{pmatrix} 0\\ 0\\\dot{\theta}_1 \end{pmatrix} \times \begin{pmatrix} \frac{l}{2}\\ 0\\ 0 \end{pmatrix} \end{pmatrix} +  \begin{pmatrix} \sin_1 g\\ \cos_1 g\\ 0 \end{pmatrix} \\ &=& \begin{pmatrix} 0\\ \ddot{\theta}_1 \cdot \frac{l}{2}\\ 0 \end{pmatrix} +   \begin{pmatrix} 0\\ 0\\ \dot{\theta}_1 \end{pmatrix} \times \begin{pmatrix} 0\\ \dot{\theta}_1 \cdot \frac{l}{2}\\ 0 \end{pmatrix} +  \begin{pmatrix} \sin_1 g\\ \cos_1 g\\ 0 \end{pmatrix} \\ &=& \begin{pmatrix} -\dot{\theta}_1^2 \cdot \frac{l}{2} + \sin_1 g\\ \ddot{\theta}_1 \cdot \frac{l}{2} + \cos_1 g\\ 0 \end{pmatrix} \end{eqnarray}$$
+$$\begin{eqnarray} ^1 \dot{\omega}_1 &=& ^1_0R \cdot ^0\dot{\omega}_0 + ^1_0R \cdot ^0\omega_0 \times ^1\omega_1 + \ddot{\theta}_1 \cdot ^1Z_1 = 0 + 0 + \begin{pmatrix} 0\\ 0\\ \ddot{\theta}_1 \end{pmatrix} = \begin{pmatrix} 0\\ 0\\ \ddot{\theta}_1 \end{pmatrix} \end{eqnarray}$$$$\begin{eqnarray} ^1 \dot{v}_1 &=& ^1_0R \cdot(^0\dot{\omega}_0 \times ^0P_1 + ^0\omega_0 \times (^0\omega_0 \times {^0} P_1)+^0\dot{v}_1)=^1_0R \cdot(0+0+-\overrightarrow{G}) =\begin{pmatrix} \sin_1g\\ \cos_1g\\ 0 \end{pmatrix} \end{eqnarray}$$$$\begin{eqnarray} ^1\dot{v}_{C_1} &=&  \begin{pmatrix} 0\\ 0\\ \ddot{\theta}_1 \end{pmatrix} \times \begin{pmatrix} \frac{l}{2}\\ 0\\ 0 \end{pmatrix} + \begin{pmatrix} 0\\ 0\\ \dot{\theta}_1 \end{pmatrix} \times \begin{pmatrix} \begin{pmatrix} 0\\ 0\\\dot{\theta}_1 \end{pmatrix} \times \begin{pmatrix} \frac{l}{2}\\ 0\\ 0 \end{pmatrix} \end{pmatrix} +  \begin{pmatrix} \sin_1 g\\ \cos_1 g\\ 0 \end{pmatrix} \\ &=& \begin{pmatrix} 0\\ \ddot{\theta}_1 \cdot \frac{l}{2}\\ 0 \end{pmatrix} +   \begin{pmatrix} 0\\ 0\\ \dot{\theta}_1 \end{pmatrix} \times \begin{pmatrix} 0\\ \dot{\theta}_1 \cdot \frac{l}{2}\\ 0 \end{pmatrix} +  \begin{pmatrix} \sin_1 g\\ \cos_1 g\\ 0 \end{pmatrix} \\ &=& \begin{pmatrix} -\dot{\theta}_1^2 \cdot \frac{l}{2} + \sin_1 g\\ \ddot{\theta}_1 \cdot \frac{l}{2} + \cos_1 g\\ 0 \end{pmatrix} \end{eqnarray}$$\\\\
 
+$$\begin{eqnarray} ^1F_1 &=& m_1 \cdot ^1\dot{v}_{C_1}\\ ^1N_1 &=& ^{C_1}I_1 \cdot ^1 \dot{\omega_1} \times ^{C_1} I_1 \cdot ^1\omega_1 =  \begin{pmatrix} 0\\ 0\\ \ddot{\theta}_1 \end{pmatrix} \end{eqnarray}$$
 
+In the Backward phase, we can find:
 
+$$\begin{eqnarray} ^1f_1 &=& 0 + ^1F_1\\ ^1n_1 &=&  \begin{pmatrix} 0\\ 0\\ \ddot{\theta}_1 \end{pmatrix} + \begin{pmatrix} \frac{l}{2}\\ 0\\ 0 \end{pmatrix} \times \begin{pmatrix} -m_1(\dot{\theta}^2_1 \cdot \frac{l}{2} - g \sin_1)\\ m_1(\ddot{\theta}_1 \cdot \frac{l}{2} + g \cos_1)\\ 0 \end{pmatrix} = \begin{pmatrix} 0\\ 0\\ \ddot{\theta}_1 + \frac{l}{2} \cdot m_1(\ddot{\theta}_1 \cdot \frac{l}{2} + g \cos_1) \end{pmatrix} \end{eqnarray}$$In the end we get:
+
+$$\begin{eqnarray} \tau_1 &=& ^1n^T_1 \cdot 1^Z_1 = \ddot{\theta}_1(1+\frac{l^2}{4}\cdot m) + \frac{l}{2} \cdot m \cdot g \cdot c_1 \end{eqnarray}$$
