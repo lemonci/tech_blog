@@ -20,7 +20,9 @@ Remember, $$x$$ and $$y$$ are the x-axis and y-axis position of the robot, so we
 
 &#x20;$$\begin{eqnarray} \frac{d} {dt} \left( \arctan \frac{\Delta y}{\Delta x} \right) &=& \frac{\Delta y \dot{x}-\Delta x \dot{y}}{\rho^2} \\ &=& \frac{v}{\rho^2} \left( \Delta y \cos \theta - \Delta x \sin \theta \right) \end{eqnarray}$$since $$\dot{x} = v \cos \theta$$ and $$\dot{y} = v \sin\theta$$
 
+With $$\Delta x = \rho \cos(\alpha+\theta)$$and $$\Delta y = \rho \sin(\alpha+\theta)$$, comes:
 
+$$\begin{eqnarray} \frac{d} {dt} \left( \arctan \left( \frac{\Delta y}{\Delta x} \right) \right) &=& \frac{v}{\rho^2} \cdot \rho (\sin (\alpha + \theta) \cos \theta - \cos(\alpha+\theta) \sin \theta) \\ &=& \frac{v \sin \alpha} {\rho} \end{eqnarray}$$
 
 
 
