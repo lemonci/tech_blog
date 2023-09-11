@@ -1,7 +1,7 @@
 ---
 description: >-
   Even if you are not into robotics, the bicycle model will make your driver's
-  license easier. (I hope)
+  license easier. (I hope so :)
 ---
 
 # Bicycle model for a car
@@ -10,4 +10,5 @@ The content is taken from the text book Corke, Peter I., Witold Jachimczyk, and 
 
 <figure><img src="../.gitbook/assets/image (9).png" alt=""><figcaption></figcaption></figure>
 
-I had&#x20;
+I (and some labmates)had been stuck with the derivative of $$\alpha$$ for some time. Thanks for my co-supervisor, [Lionel Birglen](https://www.polymtl.ca/expertises/en/birglen-lionel), who points out that it is the derivative of $$\arctan$$ that confused us. So here it goes:
+
