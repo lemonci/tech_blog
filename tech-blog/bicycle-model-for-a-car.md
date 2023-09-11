@@ -12,7 +12,13 @@ The content is taken from the text book Corke, Peter I., Witold Jachimczyk, and 
 
 I (and some labmates)had been stuck with the derivative of $$\alpha$$ for some time. Thanks for my co-supervisor, [Lionel Birglen](https://www.polymtl.ca/expertises/en/birglen-lionel), who points out that it is the derivative of $$\arctan$$ that confused us. So here it goes:
 
-$$\begin{eqnarray} \frac{d} {dt} \left( \arctan \frac{\Delta y}{\Delta x} \right) &=& \frac{1}{1+{\left( \frac{\Delta x}{\Delta y}\right)}^2} \frac {d}{dt} \left( \frac{\Delta y}{\Delta x} \right) \\ &=& \frac{1}{1+{\left( \frac{\Delta x}{\Delta y}\right)}^2} \left( \frac{ \Delta \dot{y} \Delta x - \Delta y \Delta \dot{x}} {\Delta x^2} \right) \end{eqnarray}$$
+$$\begin{eqnarray} \frac{d} {dt} \left( \arctan \frac{\Delta y}{\Delta x} \right) &=& \frac{1}{1+{\left( \frac{\Delta x}{\Delta y}\right)}^2} \frac {d}{dt} \left( \frac{\Delta y}{\Delta x} \right) \\ &=& \frac{\Delta x^2}{\Delta x^2 + \Delta y^2} \left( \frac{ \dot{\Delta y} \Delta x - \Delta y \dot{\Delta x}} {\Delta x^2} \right) \\ &=& \frac {\dot{ \Delta y} \Delta x - \Delta y \dot {\Delta x}}{\rho^2}  \end{eqnarray}$$
+
+Assume the goal position is fixed.
+
+Remember, $$x$$ and $$y$$ are the x-axis and y-axis position of the robot, so we have $$\dot{x} = - \dot{\Delta x}$$and $$\dot{y} = - \dot{\Delta y}$$. Then:
+
+&#x20;$$\begin{eqnarray} \frac{d} {dt} \left( \arctan \frac{\Delta y}{\Delta x} \right) &=& \frac{\Delta y \dot{x}-\Delta x \dot{y}}{\rho^2} \\ &=& \frac{v}{\rho^2} \left( \Delta y \cos \theta - \Delta x \sin \theta \right) \end{eqnarray}$$since $$\dot{x} = v \cos \theta$$ and $$\dot{y} = v \sin\theta$$
 
 
 
