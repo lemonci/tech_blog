@@ -12,3 +12,9 @@ The content is taken from the text book Corke, Peter I., Witold Jachimczyk, and 
 
 I (and some labmates)had been stuck with the derivative of $$\alpha$$ for some time. Thanks for my co-supervisor, [Lionel Birglen](https://www.polymtl.ca/expertises/en/birglen-lionel), who points out that it is the derivative of $$\arctan$$ that confused us. So here it goes:
 
+$$\begin{eqnarray} \frac{d} {dt} \left( \arctan \frac{\Delta y}{\Delta x} \right) &=& \frac{1}{1+{\left( \frac{\Delta x}{\Delta y}\right)}^2} \frac {d}{dt} \left( \frac{\Delta y}{\Delta x} \right) \\ &=& \frac{1}{1+{\left( \frac{\Delta x}{\Delta y}\right)}^2} \left( \frac{ \Delta \dot{y} \Delta x - \Delta y \Delta \dot{x}} {\Delta x^2} \right) \end{eqnarray}$$
+
+
+
+
+
