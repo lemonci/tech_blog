@@ -1,7 +1,7 @@
 ---
 description: >-
   Even if you are not into robotics, the bicycle model will make your driver's
-  license easier. (I hope so :)
+  license test easier. (I hope so :)
 ---
 
 # Bicycle model for a car
