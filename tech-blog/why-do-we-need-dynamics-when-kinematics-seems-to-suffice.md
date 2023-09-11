@@ -30,7 +30,7 @@ If you remember the definition of the joint angle $$\theta$$ in the DH parameter
 
 Finally a table of DH parameters can be obtained:
 
-<table><thead><tr><th width="82">i</th><th>α_{i-1}\</th><th>a_{i-1}</th><th>d_i</th><th>θ_i</th></tr></thead><tbody><tr><td>1</td><td>π/2</td><td>0</td><td>0.1652</td><td>θ_1</td></tr><tr><td>2</td><td>0</td><td>-0.425</td><td>0</td><td>θ_2</td></tr><tr><td>3</td><td>0</td><td>-0.3922</td><td>0</td><td>θ_3</td></tr><tr><td>4</td><td>π/2</td><td>0</td><td>0.1333</td><td>θ_4</td></tr><tr><td>5</td><td>-π/2</td><td>0</td><td>0.0997</td><td>θ_5</td></tr><tr><td>6</td><td>0</td><td>0</td><td>0.0996</td><td>θ_6</td></tr></tbody></table>
+<table><thead><tr><th width="82">i</th><th>α_{i-1}</th><th>a_{i-1}</th><th>d_i</th><th>θ_i</th></tr></thead><tbody><tr><td>1</td><td>π/2</td><td>0</td><td>0.1652</td><td>θ_1</td></tr><tr><td>2</td><td>0</td><td>-0.425</td><td>0</td><td>θ_2</td></tr><tr><td>3</td><td>0</td><td>-0.3922</td><td>0</td><td>θ_3</td></tr><tr><td>4</td><td>π/2</td><td>0</td><td>0.1333</td><td>θ_4</td></tr><tr><td>5</td><td>-π/2</td><td>0</td><td>0.0997</td><td>θ_5</td></tr><tr><td>6</td><td>0</td><td>0</td><td>0.0996</td><td>θ_6</td></tr></tbody></table>
 
 Where do $$a_{i}$$ and $$d_i$$ come from? Generally speaking, they are parameters recognized during the machine design, and the manufacturer of the arm will tell you these values. Another way is try to measure them on the arm yourself ......
 
