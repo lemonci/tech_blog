@@ -17,7 +17,8 @@ Twitter: [https://twitter.com/Monica\_MQ\_Li](https://twitter.com/Monica\_MQ\_Li
 
 **Polytechnique Montréal**\
 Ph.D., Computer Engineering, 2023-current\
-Topic: Human awareness and cooperation in mobile Cobot
+Topic: Human awareness and cooperation in mobile Cobot\
+GPA: 4.0
 
 **Bishop's University**\
 M.Sc., Computer Science, 2020-2022\
