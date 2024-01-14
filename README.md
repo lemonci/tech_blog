@@ -1,6 +1,6 @@
 # About me
 
-PhD student in [MISTLab](https://mistlab.ca/), [Polytechnique Montréal](https://www.polymtl.ca/). I will work with a [Kinova Gen3 robotic arm](https://www.kinovarobotics.com/product/gen3-robots) to facilitate her work with human beings.
+PhD student in [MISTLab](https://mistlab.ca/), [Polytechnique Montréal](https://www.polymtl.ca/). I works with multiple [Kinova Gen3 robotic arms](https://www.kinovarobotics.com/product/gen3-robots) to facilitate their work with human beings.
 
 Email: [monica.li@outlook.com](mailto:monica.li@outlook.com)\
 Google Scholar: [https://scholar.google.com/citations?user=\_GUnfwYAAAAJ](https://scholar.google.com/citations?user=\_GUnfwYAAAAJ)\
