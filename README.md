@@ -4,7 +4,7 @@ PhD student in [MISTLab](https://mistlab.ca/), [Polytechnique Montréal](https:/
 
 Email: [monica.li@outlook.com](mailto:monica.li@outlook.com)\
 Google Scholar: [https://scholar.google.com/citations?user=\_GUnfwYAAAAJ](https://scholar.google.com/citations?user=\_GUnfwYAAAAJ)\
-LinkedIn: [https://www.linkedin.com/in/monica-li-3206453a/](https://www.linkedin.com/in/monica-mq-li)\
+LinkedIn: [https://www.linkedin.com/in/monica-mq-li](https://www.linkedin.com/in/monica-mq-li)\
 Twitter: [https://twitter.com/Monica\_MQ\_Li](https://twitter.com/Monica\_MQ\_Li)
 
 ## Research Interest
