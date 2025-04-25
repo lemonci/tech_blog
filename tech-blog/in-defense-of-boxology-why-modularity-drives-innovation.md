@@ -18,7 +18,7 @@ But is that a fair critique? Or are we overlooking the historical pattern of how
 
 Before the 1950s, global shipping was an expensive, labor-intensive nightmare. Every item—whether it was a car engine or a crate of bananas—had to be manually loaded, secured, and unloaded. Then an introduction of standardized shipping containers, pioneered by Malcolm McLean, an American trucking entrepreneur who popularized the **intermodal shipping containes,** transformed the industry.
 
-It was a simple idea: standardize the size of cargo containers so they could be easily stacked, stored, and transferred between ships, trains, and trucks. These containers created a universal interface between ships, trains, and trucks. This modular approach didn’t stifle innovation—it supercharged it. Ports, vehicles, and logistics software were redesigned around this standard. It reduced shipping costs by up to 90% and facilitated the explosion of global trade and supply chain innovation \[Levinson, 2006].
+It was a simple idea: standardize the size of cargo containers so they could be easily stacked, stored, and transferred between ships, trains, and trucks. These containers created a universal interface between ships, trains, and trucks. This modular approach didn’t stifle innovation—it supercharged it. Ports, vehicles, and logistics software were redesigned around this standard. It reduced shipping costs by up to 90% and facilitated the explosion of global trade and supply chain innovation.
 
 ## Encapsulation in Software Engineering
 
@@ -37,3 +37,9 @@ Modern machine learning frameworks like TensorFlow, PyTorch, and Hugging Face Tr
 ## Creativity Beyond the Box
 
 Boxology isn’t the enemy of innovation—it’s a prerequisite, as an information compression to for us to grasp the explosion of knowledge in all domains. Human progress often moves in a cycle: we explore the chaotic frontier, we identify patterns, we create tools, and then we encapsulate. That encapsulation becomes the platform for the next frontier.
+
+**References:**
+
+* Levinson, M. (2006). _The Box: How the Shipping Container Made the World Smaller and the World Economy Bigger._ Princeton University Press.
+* Booch, G., Rumbaugh, J., & Jacobson, I. (2005). _The Unified Modeling Language User Guide._ Addison-Wesley.
+* Vaswani, A., et al. (2017). "Attention is All You Need." In _Advances in Neural Information Processing Systems_.
