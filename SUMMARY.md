@@ -11,3 +11,4 @@
   * [Gimbal Lock in Dynamic and Static Euler Angle Perspective](tech-blog/gimbal-lock-in-dynamic-and-static-euler-angle-perspective.md)
   * [DensePose Implementation](tech-blog/densepose-implementation.md)
   * [Comparison of Standard and Modified D-H Methods](tech-blog/comparison-of-standard-and-modified-d-h-methods.md)
+  * [In Defense of Boxology: Why Modularity Drives Innovation](tech-blog/in-defense-of-boxology-why-modularity-drives-innovation.md)
