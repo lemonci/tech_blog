@@ -1251,6 +1251,8 @@ else {
 
 ## src/[gaussian\_model.cpp](https://github.com/KwanWaiPang/Photo-SLAM_comment/blob/main/src/gaussian_model.cpp)
 
+### Head File
+
 This is a main class. According to the head file, the main member variables include:
 
 `torch::DeviceType device_type_`: type of device
@@ -1301,6 +1303,20 @@ Two macros:\
     this->denom_ = torch::empty(0, torch::TensorOptions().device(device_type));              \
     GAUSSIAN_MODEL_TENSORS_TO_VEC 
 ```
+
+The constructor `GaussianModel::GaussianModel()`. The input is sh\_degree and model parameters.
+
+`torch::Tensor getCovarianceActivation(int scaling_modifier = 1)` : Calculate the covariance matrix from the scaling and rotation, at the same time outputs symmetric uncertainty (NICE!)
+
+`void createFromPcd`: Initialize the Gaussians from the point clouds. Create, fill and fuse the point cloud tensor and color tensor, deal with the color with SH degree. Calculate other properties of the point cloud.
+
+`void increasePcd`: Add the new point cloud data (with color) into the existing Gaussian model.
+
+`void trainingSetup(/*param*/)`: set up the paramters of adam optimizer and learning rate.
+
+`float updateLearningRate(int step)`: Update the learning rate based on the step, call the pre-defined  `exponLrFunc` function to get a continous leanring rate decrease function.
+
+
 
 ## Utility functions for Gaussians
 
