@@ -1249,6 +1249,59 @@ else {
 }
 ```
 
+## src/[gaussian\_model.cpp](https://github.com/KwanWaiPang/Photo-SLAM_comment/blob/main/src/gaussian_model.cpp)
+
+This is a main class. According to the head file, the main member variables include:
+
+`torch::DeviceType device_type_`: type of device
+
+The current degree and maximum degred of sperical harmonic: `int active_sh_degree_` and `int max_sh_degree_` .
+
+The parameters of 3D Gaussians: \
+`torch::Tensor xyz_`: position\
+`torch::Tensor features_dc_`: ???\
+`torch::Tensor features_rest_`: ???\
+`torch:: Tensor opacity_`: opacity alpha\
+`torch::Tensor scaling_` : scaling factors\
+`torch::Tensor rotation_` : rotation factors\
+`torch::Tensor xyz_gradient_accum_` : accumulated gradient in the Gaussians\
+`torch::Tensor denom_` : ???\
+`torch::Tensor exist_since_iter_` : The iteration when this Gaussian is added to the map
+
+Optimizer: `std::shared_ptr <torch::optim::Adam> optimizer_`&#x20;
+
+Position and color of the sparse point cloud: `torch::Tensor sparse_points_xyz` and `torch::Tensor sparse_points_color` .
+
+Two macros:\
+`# define GAUSSIAN_MODEL_TENSORS_TO_VEC` : to store the group of tensors into a vector (data type: `std::vector<torch::Tensor>`)
+
+```
+#define GAUSSIAN_MODEL_TENSORS_TO_VEC                        \
+    this->Tensor_vec_xyz_ = {this->xyz_};                    \
+    this->Tensor_vec_feature_dc_ = {this->features_dc_};     \
+    this->Tensor_vec_feature_rest_ = {this->features_rest_}; \
+    this->Tensor_vec_opacity_ = {this->opacity_};            \
+    this->Tensor_vec_scaling_ = {this->scaling_};            \
+    this->Tensor_vec_rotation_ = {this->rotation_};
+```
+
+\
+`#define GAUSSIAN_MODEL_INIT_TENSORS(device_type)` : to initialize multiple tensors and place them to the specific device. This macro accpets one parameter `device_type` for specific device.
+
+```
+#define GAUSSIAN_MODEL_INIT_TENSORS(device_type)                                             \
+    this->xyz_ = torch::empty(0, torch::TensorOptions().device(device_type));                \
+    this->features_dc_ = torch::empty(0, torch::TensorOptions().device(device_type));        \
+    this->features_rest_ = torch::empty(0, torch::TensorOptions().device(device_type));      \
+    this->scaling_ = torch::empty(0, torch::TensorOptions().device(device_type));            \
+    this->rotation_ = torch::empty(0, torch::TensorOptions().device(device_type));           \
+    this->opacity_ = torch::empty(0, torch::TensorOptions().device(device_type));            \
+    this->max_radii2D_ = torch::empty(0, torch::TensorOptions().device(device_type));        \
+    this->xyz_gradient_accum_ = torch::empty(0, torch::TensorOptions().device(device_type)); \
+    this->denom_ = torch::empty(0, torch::TensorOptions().device(device_type));              \
+    GAUSSIAN_MODEL_TENSORS_TO_VEC 
+```
+
 ## Utility functions for Gaussians
 
 ### `src/`[`gaussian_keyframe.cpp`](https://github.com/KwanWaiPang/Photo-SLAM_comment/blob/main/src/gaussian_keyframe.cpp)
@@ -1279,6 +1332,3 @@ The headfile mainly defines the camera id, parameters, size of the images and ga
 
 It only has one function `GaussianRenderer::render`, as a wrapper of the forward function above but it handles the calculation of covariance and spherical harmonic degree. It is similar to the [`gaussian_render/__init__.py`](https://github.com/graphdeco-inria/gaussian-splatting/blob/main/gaussian_renderer/__init__.py).
 
-## src/[gaussian\_model.cpp](https://github.com/KwanWaiPang/Photo-SLAM_comment/blob/main/src/gaussian_model.cpp)
-
-This is a main class.
