@@ -984,6 +984,100 @@ The constructor doesn't only handle the input parameters but also operate on its
 }
 </code></pre>
 
+### `void GaussianMapper::handleNewKeyframe`
+
+`void GaussianMapper::handleNewKeyframe`  sets up the pose, camera, image, auxiliary image of the new keyframe; puts the new keyframe into the scene. It gives the used time of the keyframe and put it into the training sliding window,&#x20;
+
+<pre><code><strong>void GaussianMapper::handleNewKeyframe(
+</strong>    std::tuple&#x3C; unsigned long/*Id*/,
+                unsigned long/*CameraId*/,
+                Sophus::SE3f/*pose*/,
+                cv::Mat/*image*/,
+                bool/*isLoopClosure*/,
+                cv::Mat/*auxiliaryImage*/,
+                std::vector&#x3C;float>,
+                std::vector&#x3C;float>,
+                std::string> &#x26;kf)
+{
+    std::shared_ptr&#x3C;GaussianKeyframe> pkf =
+        std::make_shared&#x3C;GaussianKeyframe>(std::get&#x3C;0>(kf), getIteration());
+    pkf->zfar_ = z_far_;
+    pkf->znear_ = z_near_;
+<strong>    // Pose
+</strong>    auto&#x26; pose = std::get&#x3C;2>(kf);
+    pkf->setPose(
+        pose.unit_quaternion().cast&#x3C;double>(),
+        pose.translation().cast&#x3C;double>());
+    cv::Mat imgRGB_undistorted, imgAux_undistorted;
+    try {
+<strong>        // Camera
+</strong>        Camera&#x26; camera = scene_->cameras_.at(std::get&#x3C;1>(kf));
+        pkf->setCameraParams(camera);
+
+<strong>        // Image (left if STEREO)
+</strong>        cv::Mat imgRGB = std::get&#x3C;3>(kf);
+        if (this->sensor_type_ == STEREO)
+            imgRGB_undistorted = imgRGB;
+        else
+            camera.undistortImage(imgRGB, imgRGB_undistorted);
+<strong>        // Auxiliary Image
+</strong>        cv::Mat imgAux = std::get&#x3C;5>(kf);
+        if (this->sensor_type_ == RGBD)
+            camera.undistortImage(imgAux, imgAux_undistorted);
+        else
+            imgAux_undistorted = imgAux;
+
+        pkf->original_image_ =
+            tensor_utils::cvMat2TorchTensor_Float32(imgRGB_undistorted, device_type_);
+        pkf->img_filename_ = std::get&#x3C;8>(kf);
+        pkf->gaus_pyramid_height_ = camera.gaus_pyramid_height_;
+        pkf->gaus_pyramid_width_ = camera.gaus_pyramid_width_;
+        pkf->gaus_pyramid_times_of_use_ = kf_gaus_pyramid_times_of_use_;
+    }
+    catch (std::out_of_range) {
+        throw std::runtime_error("[GaussianMapper::combineMappingOperations]KeyFrame Camera not found!");
+    }
+<strong>    // Add the new keyframe to the scene
+</strong>    pkf->computeTransformTensors();
+    scene_->addKeyframe(pkf, &#x26;kfid_shuffled_);
+
+<strong>    // Give new keyframes times of use and add it to the training sliding window
+</strong>    increaseKeyframeTimesOfUse(pkf, newKeyframeTimesOfUse());
+
+<strong>    // Get dense point cloud from the new keyframe to accelerate training
+</strong>    pkf->img_undist_ = imgRGB_undistorted;
+    pkf->img_auxiliary_undist_ = imgAux_undistorted;
+    pkf->kps_pixel_ = std::move(std::get&#x3C;6>(kf));
+    pkf->kps_point_local_ = std::move(std::get&#x3C;7>(kf));
+    if (isdoingInactiveGeoDensify())
+        increasePcdByKeyframeInactiveGeoDensify(pkf);
+
+<strong>    // Prepare multi resolution images for pyramid training
+</strong>    if (device_type_ == torch::kCUDA) {
+        cv::cuda::GpuMat img_gpu;
+        img_gpu.upload(pkf->img_undist_);
+        pkf->gaus_pyramid_original_image_.resize(num_gaus_pyramid_sub_levels_);
+        for (int l = 0; l &#x3C; num_gaus_pyramid_sub_levels_; ++l) {
+            cv::cuda::GpuMat img_resized;
+            cv::cuda::resize(img_gpu, img_resized,
+                                cv::Size(pkf->gaus_pyramid_width_[l], pkf->gaus_pyramid_height_[l]));
+            pkf->gaus_pyramid_original_image_[l] =
+                tensor_utils::cvGpuMat2TorchTensor_Float32(img_resized);
+        }
+    }
+    else {
+        pkf->gaus_pyramid_original_image_.resize(num_gaus_pyramid_sub_levels_);
+        for (int l = 0; l &#x3C; num_gaus_pyramid_sub_levels_; ++l) {
+            cv::Mat img_resized;
+            cv::resize(pkf->img_undist_, img_resized,
+                        cv::Size(pkf->gaus_pyramid_width_[l], pkf->gaus_pyramid_height_[l]));
+            pkf->gaus_pyramid_original_image_[l] =
+                tensor_utils::cvMat2TorchTensor_Float32(img_resized, device_type_);
+        }
+    }
+}
+</code></pre>
+
 ### Other functions
 
 #### `bool GaussianMapper::isStopped()`
