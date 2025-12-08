@@ -1,7 +1,5 @@
 ---
-description: >-
-  Translation based on this
-  [repo](https://github.com/KwanWaiPang/Photo-SLAM_comment/)
+description: Translation based on https://github.com/KwanWaiPang/Photo-SLAM_comment/
 ---
 
 # Photo-SLAM code brief
