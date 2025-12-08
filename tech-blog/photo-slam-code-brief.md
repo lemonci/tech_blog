@@ -388,9 +388,7 @@ The constructor doesn't only handle the input parameters but also operate on its
 
 ### `void run()`&#x20;
 
-&#x20;`void run()` is the main main process, read the camera pose and point cloud, prepare the images of multiple resolutions and call the train function trainForOneIteration()
-
-
+&#x20;`void run()` is the main main process, read the camera pose and point cloud, prepare the images of multiple resolutions and call the train function `trainForOneIteration()` .
 
 <pre data-full-width="true"><code>void GaussianMapper::run()
 {
@@ -772,5 +770,237 @@ The constructor doesn't only handle the input parameters but also operate on its
             gaussians_->optimizer_->zero_grad(true);
         }
     }
+</code></pre>
+
+### `void combineMappingOperations()`
+
+`void combineMappingOperations()`  is to combine the mappers, using the functions of orb-slam3 to do BA and loop closure.
+
+<pre data-full-width="true"><code>void GaussianMapper::combineMappingOperations()
+{
+<strong>    // Get Mapping Operations
+</strong>    while (pSLAM_->getAtlas()->hasMappingOperation()) {
+        ORB_SLAM3::MappingOperation opr =
+            pSLAM_->getAtlas()->getAndPopMappingOperation();
+
+        switch (opr.meOperationType)
+        {
+<strong>        // Handle local bundle adjustment
+</strong>        case ORB_SLAM3::MappingOperation::OprType::LocalMappingBA:
+        {
+            // std::cout &#x3C;&#x3C; "[Gaussian Mapper]Local BA Detected."
+            //           &#x3C;&#x3C; std::endl;
+
+<strong>            // Get new keyframes
+</strong>            auto&#x26; associated_kfs = opr.associatedKeyFrames();
+
+<strong>            // Add keyframes to the scene
+</strong>            for (auto&#x26; kf : associated_kfs) {
+                // Keyframe Id
+                auto kfid = std::get&#x3C;0>(kf);
+                std::shared_ptr&#x3C;GaussianKeyframe> pkf = scene_->getKeyframe(kfid);
+<strong>                // If the keyframe is already in the scene, only update the pose.
+</strong><strong>                // Otherwise create a new one
+</strong>                if (pkf) {
+                    auto&#x26; pose = std::get&#x3C;2>(kf);
+                    pkf->setPose(
+                        pose.unit_quaternion().cast&#x3C;double>(),
+                        pose.translation().cast&#x3C;double>());
+                    pkf->computeTransformTensors();
+
+                    // Give local BA keyframes times of use
+                    increaseKeyframeTimesOfUse(pkf, local_BA_increased_times_of_use_);
+                }
+                else {
+                    handleNewKeyframe(kf);
+                }
+            }
+
+<strong>            // Get new points
+</strong><strong>            // Theoratically we can get the new points by removing the cooresponding points ???
+</strong>            auto&#x26; associated_points = opr.associatedMapPoints();
+            auto&#x26; points = std::get&#x3C;0>(associated_points);
+            auto&#x26; colors = std::get&#x3C;1>(associated_points);
+
+<strong>            // Add new points to the model
+</strong>            if (initial_mapped_ &#x26;&#x26; points.size() >= 30) {
+<strong>            // No gradient calculation below
+</strong>                torch::NoGradGuard no_grad;
+                std::unique_lock&#x3C;std::mutex> lock_render(mutex_render_);
+                gaussians_->increasePcd(points, colors, getIteration());
+            }
+        }
+        break;
+
+<strong>        // Loop closure bundle adjustment
+</strong>        case ORB_SLAM3::MappingOperation::OprType::LoopClosingBA:
+        {
+            std::cout &#x3C;&#x3C; "[Gaussian Mapper]Loop Closure Detected."
+                      &#x3C;&#x3C; std::endl;
+
+<strong>            // Get the loop keyframe scale modification factor
+</strong>            float loop_kf_scale = opr.mfScale;
+
+<strong>            // Get new keyframes (scaled transformation applied in ORB-SLAM3)
+</strong>            auto&#x26; associated_kfs = opr.associatedKeyFrames();
+<strong>            // Mark the transformed points to avoid transforming more than once
+</strong>            torch::Tensor point_not_transformed_flags =
+                torch::full(
+                    {gaussians_->xyz_.size(0)},
+                    true,
+                    torch::TensorOptions().device(device_type_).dtype(torch::kBool));
+            if (record_loop_ply_)
+                savePly(result_dir_ / (std::to_string(getIteration()) + "_0_before_loop_correction"));
+            int num_transformed = 0;
+<strong>            // Add keyframes to the scene
+</strong>            for (auto&#x26; kf : associated_kfs) {
+<strong>                // Keyframe Id
+</strong>                auto kfid = std::get&#x3C;0>(kf);
+                std::shared_ptr&#x3C;GaussianKeyframe> pkf = scene_->getKeyframe(kfid);
+<strong>                // In case new points are added in handleNewKeyframe()
+</strong>                int64_t num_new_points = gaussians_->xyz_.size(0) - point_not_transformed_flags.size(0);
+                if (num_new_points > 0)
+                    point_not_transformed_flags = torch::cat({
+                        point_not_transformed_flags,
+                        torch::full({num_new_points}, true, point_not_transformed_flags.options())},
+                        /*dim=*/0);
+<strong>                // If kf is already in the scene, evaluate the change in pose,
+</strong><strong>                // if too large we perform loop correction on its visible model points.
+</strong><strong>                // If not in the scene, create a new one.
+</strong>                if (pkf) {
+                    auto&#x26; pose = std::get&#x3C;2>(kf);
+<strong>                    // If is loop closure kf
+</strong>// if (std::get&#x3C;4>(kf)) {
+// renderAndRecordKeyframe(pkf, result_dir_, "_0_before_loop_correction");
+                        Sophus::SE3f original_pose = pkf->getPosef(); // original_pose = old, inv_pose = new
+                        Sophus::SE3f inv_pose = pose.inverse();
+                        Sophus::SE3f diff_pose = inv_pose * original_pose;
+                        bool large_rot = !diff_pose.rotationMatrix().isApprox(
+                            Eigen::Matrix3f::Identity(), large_rot_th_);
+                        bool large_trans = !diff_pose.translation().isMuchSmallerThan(
+                            1.0, large_trans_th_);
+                        if (large_rot || large_trans) {
+                            std::cout &#x3C;&#x3C; "[Gaussian Mapper]Large loop correction detected, transforming visible points of kf "
+                                    &#x3C;&#x3C; kfid &#x3C;&#x3C; std::endl;
+                            diff_pose.translation() -= inv_pose.translation(); // t = (R_new * t_old + t_new) - t_new
+                            diff_pose.translation() *= loop_kf_scale;          // t = s * (R_new * t_old)
+                            diff_pose.translation() += inv_pose.translation(); // t = (s * R_new * t_old) + t_new
+                            torch::Tensor diff_pose_tensor =
+                                tensor_utils::EigenMatrix2TorchTensor(
+                                    diff_pose.matrix(), device_type_).transpose(0, 1);
+                            {
+                                std::unique_lock&#x3C;std::mutex> lock_render(mutex_render_);
+                                gaussians_->scaledTransformVisiblePointsOfKeyframe(
+                                    point_not_transformed_flags,
+                                    diff_pose_tensor,
+                                    pkf->world_view_transform_,
+                                    pkf->full_proj_transform_,
+                                    pkf->creation_iter_,
+                                    stableNumIterExistence(),
+                                    num_transformed,
+                                    loop_kf_scale); // selected xyz *= s
+                            }
+<strong>                            // Give loop keyframes times of use
+</strong>                            increaseKeyframeTimesOfUse(pkf, loop_closure_increased_times_of_use_);
+// renderAndRecordKeyframe(pkf, result_dir_, "_1_after_loop_transforming_points");
+// std::cout&#x3C;&#x3C;num_transformed&#x3C;&#x3C;std::endl;
+                        }
+// }
+                    pkf->setPose(
+                        pose.unit_quaternion().cast&#x3C;double>(),
+                        pose.translation().cast&#x3C;double>());
+                    pkf->computeTransformTensors();
+// if (std::get&#x3C;4>(kf)) renderAndRecordKeyframe(pkf, result_dir_, "_2_after_pose_correction");
+                }
+                else {
+                    handleNewKeyframe(kf);
+                }
+            }
+            if (record_loop_ply_)
+                savePly(result_dir_ / (std::to_string(getIteration()) + "_1_after_loop_correction"));
+// keyframesToJson(result_dir_ / (std::to_string(getIteration()) + "_0_before_loop_correction"));
+
+<strong>            // Get new points (scaled transformation applied in ORB-SLAM3, so this step is performed at last to avoid scaling twice)
+</strong>            auto&#x26; associated_points = opr.associatedMapPoints();
+            auto&#x26; points = std::get&#x3C;0>(associated_points);
+            auto&#x26; colors = std::get&#x3C;1>(associated_points);
+
+<strong>            // Add new points to the model
+</strong>            if (initial_mapped_ &#x26;&#x26; points.size() >= 30) {
+                torch::NoGradGuard no_grad;
+                std::unique_lock&#x3C;std::mutex> lock_render(mutex_render_);
+                gaussians_->increasePcd(points, colors, getIteration());
+            }
+
+<strong>            // Mark this iteration
+</strong>            loop_closure_iteration_ = true;
+        }
+        break;
+
+        case ORB_SLAM3::MappingOperation::OprType::ScaleRefinement:
+        {
+            std::cout &#x3C;&#x3C; "[Gaussian Mapper]Scale refinement Detected. Transforming all kfs and points..."
+                      &#x3C;&#x3C; std::endl;
+
+            float s = opr.mfScale;
+            Sophus::SE3f&#x26; T = opr.mT;
+            if (initial_mapped_) {
+                // Apply the scaled transformation on gaussian model points
+                {
+                    std::unique_lock&#x3C;std::mutex> lock_render(mutex_render_);
+                    gaussians_->applyScaledTransformation(s, T);
+                }
+                // Apply the scaled transformation to the scene
+                scene_->applyScaledTransformation(s, T);
+            }
+            else { // TODO: the workflow should not come here, delete this branch
+                // Apply the scaled transformation to the cached points
+                for (auto&#x26; pt : scene_->cached_point_cloud_) {
+                    // pt &#x3C;- (s * Ryw * pt + tyw)
+                    auto&#x26; pt_xyz = pt.second.xyz_;
+                    pt_xyz *= s;
+                    pt_xyz = T.cast&#x3C;double>() * pt_xyz;
+                }
+
+<strong>                // Apply the scaled transformation on gaussian keyframes
+</strong>                for (auto&#x26; kfit : scene_->keyframes()) {
+                    std::shared_ptr&#x3C;GaussianKeyframe> pkf = kfit.second;
+                    Sophus::SE3f Twc = pkf->getPosef().inverse();
+                    Twc.translation() *= s;
+                    Sophus::SE3f Tyc = T * Twc;
+                    Sophus::SE3f Tcy = Tyc.inverse();
+                    pkf->setPose(Tcy.unit_quaternion().cast&#x3C;double>(), Tcy.translation().cast&#x3C;double>());
+                    pkf->computeTransformTensors();
+                }
+            }
+        }
+        break;
+
+        default:
+        {
+            throw std::runtime_error("MappingOperation type not supported!");
+        }
+        break;
+        }
+    }
 }
 </code></pre>
+
+### Renderings
+
+There are mainly three rendering functions to render rgb, depth, loss and to output the evaluation metrics: `void recordKeyframeRendered(/*param*/)`, `void renderAndRecordKeyframe(/*param*/)` and `void renderAndRecordAllKeyframes(/*param*/)`.
+
+
+
+### Loader
+
+`void loadPly(/*param*/)` not only loads the point cloud, but also load the camera intrinsics to undistort the images and reset the size of the image.
+
+
+
+### Densification based on inactive  points
+
+`void increasePcdByKeyframeInactiveGeoDensify(/*param*/)` densifies the point cloud based on inactive points according to different types of sensors.
+
+
+
