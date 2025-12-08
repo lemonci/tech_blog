@@ -402,7 +402,7 @@ The constructor doesn't only handle the input parameters but also operate on its
 </strong><strong>        // We need ORBSLAM still running and the number of keyframes is over a certain amount
 </strong>        if (hasMetInitialMappingConditions()) {
 
-<strong>            //Clean the map of orbslam3 ???
+<strong>            //Clean the mapping operation of orbslam3
 </strong>            pSLAM_->getAtlas()->clearMappingOperation();
 
 <strong>            // Get initial sparse map from orbSLAM's current map
@@ -410,7 +410,8 @@ The constructor doesn't only handle the input parameters but also operate on its
             std::vector&#x3C;ORB_SLAM3::KeyFrame*> vpKFs;
             std::vector&#x3C;ORB_SLAM3::MapPoint*> vpMPs;
             {
-                std::unique_lock&#x3C;std::mutex> lock_map(pMap->mMutexMapUpdate);
+<strong>                // Lock the map of orb3, basically pause the tracking during mapping
+</strong>                std::unique_lock&#x3C;std::mutex> lock_map(pMap->mMutexMapUpdate);
 <strong>                //Get keyframes
 </strong>                vpKFs = pMap->GetAllKeyFrames();
 <strong>                //Get map points
