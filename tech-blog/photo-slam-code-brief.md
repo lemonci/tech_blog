@@ -57,8 +57,8 @@ After everything is ready, we can start to create the SLAM system. The following
     std::thread viewer_thd;
     std::shared_ptr<ImGuiViewer> pViewer;
     if (use_viewer)
-    {  // If the GUI config is true, we start the viewer thread
-       // and input the SLAM system pointer and 3D Gaussian Mapper pointer
+    {  // If the GUI config is true, we start the viewer thread and
+       // pass SLAM system pointer and 3D Gaussian Mapper pointer as input
         pViewer = std::make_shared<ImGuiViewer>(pSLAM, pGausMapper);
         viewer_thd = std::thread(&ImGuiViewer::run, pViewer.get());
     }
