@@ -608,12 +608,12 @@ The constructor doesn't only handle the input parameters but also operate on its
 
 <pre data-full-width="true"><code>void GaussianMapper::trainForOneIteration()
 {
-    //Add 1 to the training iteration
-    increaseIteration(1);
+<strong>    //Add 1 to the training iteration
+</strong>    increaseIteration(1);
     auto iter_start_timing = std::chrono::steady_clock::now();
 
-    // Pick a random Camera of keyframe
-    std::shared_ptr&#x3C;GaussianKeyframe> viewpoint_cam = useOneRandomSlidingWindowKeyframe();
+<strong>    // Pick a random Camera of keyframe
+</strong>    std::shared_ptr&#x3C;GaussianKeyframe> viewpoint_cam = useOneRandomSlidingWindowKeyframe();
     if (!viewpoint_cam) {
         increaseIteration(-1);
         return;
@@ -643,19 +643,19 @@ The constructor doesn't only handle the input parameters but also operate on its
         mask = scene_->cameras_.at(viewpoint_cam->camera_id_).gaus_pyramid_undistort_mask_[training_level];
     }
 
-    // Mutex lock for usage of the gaussian model
-    std::unique_lock&#x3C;std::mutex> lock_render(mutex_render_);
+<strong>    // Mutex lock for usage of the gaussian model
+</strong>    std::unique_lock&#x3C;std::mutex> lock_render(mutex_render_);
 
-    // Every 1000 its we increase the levels of SH up to a maximum degree
-    if (getIteration() % 1000 == 0 &#x26;&#x26; default_sh_ &#x3C; model_params_.sh_degree_)
+<strong>    // Every 1000 iterations, we increase the levels of SH up to a maximum degree
+</strong>    if (getIteration() % 1000 == 0 &#x26;&#x26; default_sh_ &#x3C; model_params_.sh_degree_)
         default_sh_ += 1;
     // if (isdoingGausPyramidTraining())
     //     gaussians_->setShDegree(training_level);
     // else
         gaussians_->setShDegree(default_sh_);
 
-    // Update learning rate
-    if (pSLAM_) {
+<strong>    // Update learning rate
+</strong>    if (pSLAM_) {
         int used_times = kfs_used_times_[viewpoint_cam->fid_];
         int step = (used_times &#x3C;= opt_params_.position_lr_max_steps_ ? used_times : opt_params_.position_lr_max_steps_);
         float position_lr = gaussians_->updateLearningRate(step);
@@ -670,9 +670,9 @@ The constructor doesn't only handle the input parameters but also operate on its
     gaussians_->setScalingLearningRate(scalingLearningRate());
     gaussians_->setRotationLearningRate(rotationLearningRate());
 
-    // Render. The returned render_pkg is a tuple, including
-    // rendered images, points in the view space, visibility filter and radius.
-    auto render_pkg = GaussianRenderer::render(
+<strong>    // Render. The returned render_pkg is a tuple, including
+</strong><strong>    // rendered images, points in the view space, visibility filter and radius.
+</strong>    auto render_pkg = GaussianRenderer::render(
         viewpoint_cam,
         image_height,
         image_width,
@@ -689,8 +689,8 @@ The constructor doesn't only handle the input parameters but also operate on its
 <strong>    // Get rid of black edges caused by undistortion
 </strong>    torch::Tensor masked_image = rendered_image * mask;
 
-    // Loss: Calculate loss and do backpropagation
-    auto Ll1 = loss_utils::l1_loss(masked_image, gt_image);
+<strong>    // Loss: Calculate loss and do backpropagation
+</strong>    auto Ll1 = loss_utils::l1_loss(masked_image, gt_image);
     float lambda_dssim = lambdaDssim();
     auto loss = (1.0 - lambda_dssim) * Ll1
                 + lambda_dssim * (1.0 - loss_utils::ssim(masked_image, gt_image, device_type_));
@@ -707,8 +707,8 @@ The constructor doesn't only handle the input parameters but also operate on its
             // Record the rendered image, ground truth image, keyfrae ID, camera to the saved path
             recordKeyframeRendered(masked_image, gt_image, viewpoint_cam->fid_, result_dir_, result_dir_, result_dir_);
 
-        // Densification
-        if (getIteration() &#x3C; opt_params_.densify_until_iter_) {
+<strong>        // Densification
+</strong>        if (getIteration() &#x3C; opt_params_.densify_until_iter_) {
             // Keep track of max radii in image-space for pruning
             gaussians_->max_radii2D_.index_put_(
                 {visibility_filter},
@@ -739,8 +739,8 @@ The constructor doesn't only handle the input parameters but also operate on its
         auto iter_time = std::chrono::duration_cast&#x3C;std::chrono::milliseconds>(
                         iter_end_timing - iter_start_timing).count();
 
-        // Log and save
-        if (training_report_interval_ &#x26;&#x26; (getIteration() % training_report_interval_ == 0))
+<strong>        // Log and save
+</strong>        if (training_report_interval_ &#x26;&#x26; (getIteration() % training_report_interval_ == 0))
             GaussianTrainer::trainingReport(
                 getIteration(),
                 opt_params_.iterations_,
