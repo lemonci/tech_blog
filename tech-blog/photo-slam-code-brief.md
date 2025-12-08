@@ -1189,7 +1189,24 @@ The following functions handle the densification, clone, pruning and split of Ga
 
 `void scaledTransformVisiblePointsOfKeyframe()` prepares and marks the model's Gaussian 3D points that are visible from a given keyframe, applying a uniform scale and view/projection transforms, then registers the transformed point and rotation tensors for optimization.
 
+## `src/`[`gaussian_scene.cpp`](https://github.com/KwanWaiPang/Photo-SLAM_comment/blob/main/src/gaussian_scene.cpp)
+
+### Head File
+
+`GaussianScene::GaussianScene(/*param*/)` is the constructor. It can read the Gaussian scene already trained.
+
+`void GaussianScene::addCamera(/*param*/)` contains a bunch of get/set methods, to get the camera, keyframes and 3D points\`.
+
+`void GaussianScne::applyScaledTransformation(/*param*/)`  applies a uniform scale to every keyframe's translation and then applies a rigid transform to each keyframe pose. It updates each GaussianKeyframe's stored pose and recomputes its transform tensors.\
+The net effect is a similarity transform (scale + rigid transform) applied to all keyframe positions and poses. Rotation comes only from the rigid transformation and the original pose; the scale is applied only to translations.
+
 ## Utility functions for Gaussians
+
+### `src/`[`gaussian_trainer.cpp`](https://github.com/KwanWaiPang/Photo-SLAM_comment/blob/main/src/gaussian_trainer.cpp)
+
+`void GaussianTrainer:trainingOnce()`: Train the Gaussians once, intialize the iterations, read the training options, set up the background color
+
+`void GaussianTrainer::trainingReport()`: Input and Output
 
 ### `src/`[`gaussian_keyframe.cpp`](https://github.com/KwanWaiPang/Photo-SLAM_comment/blob/main/src/gaussian_keyframe.cpp)
 
