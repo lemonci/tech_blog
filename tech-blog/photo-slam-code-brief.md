@@ -765,9 +765,9 @@ The constructor doesn't only handle the input parameters but also operate on its
         if (loop_closure_iteration_)
             loop_closure_iteration_ = false;
 
-        // Optimizer step
-        // If the iteration is smaller than the maximum iteration amount, continue to optimize
-        if (getIteration() &#x3C; opt_params_.iterations_) {
+<strong>        // Optimizer step
+</strong><strong>        // If the iteration is smaller than the maximum iteration amount, continue to optimize
+</strong>        if (getIteration() &#x3C; opt_params_.iterations_) {
             gaussians_->optimizer_->step();
             gaussians_->optimizer_->zero_grad(true);
         }
