@@ -1316,7 +1316,12 @@ The constructor `GaussianModel::GaussianModel()`. The input is sh\_degree and mo
 
 `float updateLearningRate(int step)`: Update the learning rate based on the step, call the pre-defined  `exponLrFunc` function to get a continous leanring rate decrease function.
 
+The following functions handle the densification, clone, pruning and split of Gaussians:\
+`void densifyAndSplit`, `void densifyAndClone`, `void densifyAndPrune` .
 
+`void densificationPostfix()` extend s the newly created Gaussians (already densified) into the existing Gaussian model.
+
+`void scaledTransformVisiblePointsOfKeyframe()` prepares and marks the model's Gaussian 3D points that are visible from a given keyframe, applying a uniform scale and view/projection transforms, then registers the transformed point and rotation tensors for optimization.
 
 ## Utility functions for Gaussians
 
