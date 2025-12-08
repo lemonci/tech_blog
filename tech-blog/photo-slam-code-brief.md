@@ -598,8 +598,6 @@ The constructor doesn't only handle the input parameters but also operate on its
 }
 </code></pre>
 
-`void trainColmap()` is for colmap training example only. Read the point cloud, train 3D Gaussians and save, it is similar to the run function.
-
 ### `void trainForOneIteration()`&#x20;
 
 `void trainForOneIteration()` is the main training code, involves iterations management, Gaussian pyramid, rendering and calculating loss, saving and logging.
@@ -986,19 +984,40 @@ The constructor doesn't only handle the input parameters but also operate on its
 }
 </code></pre>
 
-### Renderings
+### Other functions
+
+#### `bool GaussianMapper::isStopped()`
+
+`bool GaussianMapper::isStopped()` returns the private variable `stopped_` of the class object`GaussianMapper`, at the same time it use the mutual lock to ensure the visit to this variable is thread-safe in the multi-thread environment.
+
+<pre data-full-width="true"><code>bool GaussianMapper::isStopped()
+{
+<strong>    // Create a exclusive lock lock_status, also lockes the mutex mutex_status_
+</strong><strong>    // The purpose of the exclusive lock is to ensure during the processing time of the function,
+</strong><strong>    // other threads cannot visit the protected data
+</strong>    std::unique_lock&#x3C;std::mutex> lock_status(this->mutex_status_);
+<strong>    // The following line returns the private variable stopped_ of the class object GaussianMapper
+</strong><strong>    // Because we have got the exclusive access to mutex_status_, we can safely read the value of this member variable.
+</strong>    return this->stopped_;
+
+    // When the function finishes and leave the scpe, the exclusive lock lock_status 
+    // will release automatically and release mutex_status_
+}
+</code></pre>
+
+#### `void trainColmap()`&#x20;
+
+`void trainColmap()` is for colmap training example only. Read the point cloud, train 3D Gaussians and save, it is similar to the run function.
+
+#### Renderings
 
 There are mainly three rendering functions to render rgb, depth, loss and to output the evaluation metrics: `void recordKeyframeRendered(/*param*/)`, `void renderAndRecordKeyframe(/*param*/)` and `void renderAndRecordAllKeyframes(/*param*/)`.
 
-
-
-### Loader
+#### Loader
 
 `void loadPly(/*param*/)` not only loads the point cloud, but also load the camera intrinsics to undistort the images and reset the size of the image.
 
-
-
-### Densification based on inactive  points
+#### Densification based on inactive  points
 
 `void increasePcdByKeyframeInactiveGeoDensify(/*param*/)` densifies the point cloud based on inactive points according to different types of sensors.
 
