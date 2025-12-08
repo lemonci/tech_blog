@@ -1117,3 +1117,166 @@ There are mainly three rendering functions to render rgb, depth, loss and to out
 
 
 
+void GaussianMapper::handleNewKeyframe( std::tuple< unsigned long/_Id_/, unsigned long/_CameraId_/, Sophus::SE3f/_pose_/, cv::Mat/_image_/, bool/_isLoopClosure_/, cv::Mat/_auxiliaryImage_/, std::vector, std::vector, std::string> \&kf) { std::shared\_ptr pkf = std::make\_shared(std::get<0>(kf), getIteration()); pkf->zfar\_ = z\_far\_; pkf->znear\_ = z\_near\_; // Pose auto& pose = std::get<2>(kf); pkf->setPose( pose.unit\_quaternion().cast(), pose.translation().cast()); cv::Mat imgRGB\_undistorted, imgAux\_undistorted; try { // Camera Camera& camera = scene\_->cameras\_.at(std::get<1>(kf)); pkf->setCameraParams(camera);
+
+```
+    // Image (left if STEREO)
+    cv::Mat imgRGB = std::get<3>(kf);
+    if (this->sensor_type_ == STEREO)
+        imgRGB_undistorted = imgRGB;
+    else
+        camera.undistortImage(imgRGB, imgRGB_undistorted);
+    // Auxiliary Image
+    cv::Mat imgAux = std::get<5>(kf);
+    if (this->sensor_type_ == RGBD)
+        camera.undistortImage(imgAux, imgAux_undistorted);
+    else
+        imgAux_undistorted = imgAux;
+
+    pkf->original_image_ =
+        tensor_utils::cvMat2TorchTensor_Float32(imgRGB_undistorted, device_type_);
+    pkf->img_filename_ = std::get<8>(kf);
+    pkf->gaus_pyramid_height_ = camera.gaus_pyramid_height_;
+    pkf->gaus_pyramid_width_ = camera.gaus_pyramid_width_;
+    pkf->gaus_pyramid_times_of_use_ = kf_gaus_pyramid_times_of_use_;
+}
+catch (std::out_of_range) {
+    throw std::runtime_error("[GaussianMapper::combineMappingOperations]KeyFrame Camera not found!");
+}
+// Add the new keyframe to the scene
+pkf->computeTransformTensors();
+scene_->addKeyframe(pkf, &kfid_shuffled_);
+
+// Give new keyframes times of use and add it to the training sliding window
+increaseKeyframeTimesOfUse(pkf, newKeyframeTimesOfUse());
+
+// Get dense point cloud from the new keyframe to accelerate training
+pkf->img_undist_ = imgRGB_undistorted;
+pkf->img_auxiliary_undist_ = imgAux_undistorted;
+pkf->kps_pixel_ = std::move(std::get<6>(kf));
+pkf->kps_point_local_ = std::move(std::get<7>(kf));
+if (isdoingInactiveGeoDensify())
+    increasePcdByKeyframeInactiveGeoDensify(pkf);
+
+// Prepare multi resolution images for training
+if (device_type_ == torch::kCUDA) {
+    cv::cuda::GpuMat img_gpu;
+    img_gpu.upload(pkf->img_undist_);
+    pkf->gaus_pyramid_original_image_.resize(num_gaus_pyramid_sub_levels_);
+    for (int l = 0; l < num_gaus_pyramid_sub_levels_; ++l) {
+        cv::cuda::GpuMat img_resized;
+        cv::cuda::resize(img_gpu, img_resized,
+                            cv::Size(pkf->gaus_pyramid_width_[l], pkf->gaus_pyramid_height_[l]));
+        pkf->gaus_pyramid_original_image_[l] =
+            tensor_utils::cvGpuMat2TorchTensor_Float32(img_resized);
+    }
+}
+else {
+    pkf->gaus_pyramid_original_image_.resize(num_gaus_pyramid_sub_levels_);
+    for (int l = 0; l < num_gaus_pyramid_sub_levels_; ++l) {
+        cv::Mat img_resized;
+        cv::resize(pkf->img_undist_, img_resized,
+                    cv::Size(pkf->gaus_pyramid_width_[l], pkf->gaus_pyramid_height_[l]));
+        pkf->gaus_pyramid_original_image_[l] =
+            tensor_utils::cvMat2TorchTensor_Float32(img_resized, device_type_);
+    }
+}
+```
+
+void GaussianMapper::handleNewKeyframe( std::tuple< unsigned long/_Id_/, unsigned long/_CameraId_/, Sophus::SE3f/_pose_/, cv::Mat/_image_/, bool/_isLoopClosure_/, cv::Mat/_auxiliaryImage_/, std::vector, std::vector, std::string> \&kf) { std::shared\_ptr pkf = std::make\_shared(std::get<0>(kf), getIteration()); pkf->zfar\_ = z\_far\_; pkf->znear\_ = z\_near\_; // Pose auto& pose = std::get<2>(kf); pkf->setPose( pose.unit\_quaternion().cast(), pose.translation().cast()); cv::Mat imgRGB\_undistorted, imgAux\_undistorted; try { // Camera Camera& camera = scene\_->cameras\_.at(std::get<1>(kf)); pkf->setCameraParams(camera);
+
+```
+    // Image (left if STEREO)
+    cv::Mat imgRGB = std::get<3>(kf);
+    if (this->sensor_type_ == STEREO)
+        imgRGB_undistorted = imgRGB;
+    else
+        camera.undistortImage(imgRGB, imgRGB_undistorted);
+    // Auxiliary Image
+    cv::Mat imgAux = std::get<5>(kf);
+    if (this->sensor_type_ == RGBD)
+        camera.undistortImage(imgAux, imgAux_undistorted);
+    else
+        imgAux_undistorted = imgAux;
+
+    pkf->original_image_ =
+        tensor_utils::cvMat2TorchTensor_Float32(imgRGB_undistorted, device_type_);
+    pkf->img_filename_ = std::get<8>(kf);
+    pkf->gaus_pyramid_height_ = camera.gaus_pyramid_height_;
+    pkf->gaus_pyramid_width_ = camera.gaus_pyramid_width_;
+    pkf->gaus_pyramid_times_of_use_ = kf_gaus_pyramid_times_of_use_;
+}
+catch (std::out_of_range) {
+    throw std::runtime_error("[GaussianMapper::combineMappingOperations]KeyFrame Camera not found!");
+}
+// Add the new keyframe to the scene
+pkf->computeTransformTensors();
+scene_->addKeyframe(pkf, &kfid_shuffled_);
+
+// Give new keyframes times of use and add it to the training sliding window
+increaseKeyframeTimesOfUse(pkf, newKeyframeTimesOfUse());
+
+// Get dense point cloud from the new keyframe to accelerate training
+pkf->img_undist_ = imgRGB_undistorted;
+pkf->img_auxiliary_undist_ = imgAux_undistorted;
+pkf->kps_pixel_ = std::move(std::get<6>(kf));
+pkf->kps_point_local_ = std::move(std::get<7>(kf));
+if (isdoingInactiveGeoDensify())
+    increasePcdByKeyframeInactiveGeoDensify(pkf);
+
+// Prepare multi resolution images for training
+if (device_type_ == torch::kCUDA) {
+    cv::cuda::GpuMat img_gpu;
+    img_gpu.upload(pkf->img_undist_);
+    pkf->gaus_pyramid_original_image_.resize(num_gaus_pyramid_sub_levels_);
+    for (int l = 0; l < num_gaus_pyramid_sub_levels_; ++l) {
+        cv::cuda::GpuMat img_resized;
+        cv::cuda::resize(img_gpu, img_resized,
+                            cv::Size(pkf->gaus_pyramid_width_[l], pkf->gaus_pyramid_height_[l]));
+        pkf->gaus_pyramid_original_image_[l] =
+            tensor_utils::cvGpuMat2TorchTensor_Float32(img_resized);
+    }
+}
+else {
+    pkf->gaus_pyramid_original_image_.resize(num_gaus_pyramid_sub_levels_);
+    for (int l = 0; l < num_gaus_pyramid_sub_levels_; ++l) {
+        cv::Mat img_resized;
+        cv::resize(pkf->img_undist_, img_resized,
+                    cv::Size(pkf->gaus_pyramid_width_[l], pkf->gaus_pyramid_height_[l]));
+        pkf->gaus_pyramid_original_image_[l] =
+            tensor_utils::cvMat2TorchTensor_Float32(img_resized, device_type_);
+    }
+}
+```
+
+### `src/`[`gaussian_keyframe.cpp`](https://github.com/KwanWaiPang/Photo-SLAM_comment/blob/main/src/gaussian_keyframe.cpp)
+
+We definitely shall not forget our favorite keyframing part of a SLAM system :)
+
+The headfile mainly defines the camera id, parameters, size of the images and gaussian pyramid, as well as the original image. The main functions in the cpp file includes:
+
+`GaussianKeyframe::getProjectionMatrix()`: to get the projection matrix
+
+`GaussianKeyframe::getWorld2View2()`: the transformation matrix from world to camera frame
+
+`void computeTransformTensors()`:  Use the two functions above to calculate the frame trasformation: world frame -> camera frame -> pixel frame.
+
+`int getCurretGausPyramidLevel()`: get the current layer of the Gaussian pyramid
+
+### `src/`[`gaussian_rasterizer.cpp`](https://github.com/KwanWaiPang/Photo-SLAM_comment/blob/main/src/gaussian_rasterizer.cpp)
+
+`gaussian_rasterizer` mainly includes
+
+`GaussianRasterizer::markVisibleGaussians` : the selection of visibile Gaussians
+
+`GaussianRasterizerFunction::forward`: forwarding&#x20;
+
+`GaussianRasterizerFunction::backward` : backword propagation
+
+### `src/`[`gaussian_renderer`](https://github.com/KwanWaiPang/Photo-SLAM_comment/blob/main/src/gaussian_renderer.cpp)
+
+It only has one function `GaussianRenderer::render`, as a wrapper of the forward function above but it handles the calculation of covariance and spherical harmonic degree. It is similar to the [`gaussian_render/__init__.py`](https://github.com/graphdeco-inria/gaussian-splatting/blob/main/gaussian_renderer/__init__.py).
+
+## src/[gaussian\_model.cpp](https://github.com/KwanWaiPang/Photo-SLAM_comment/blob/main/src/gaussian_model.cpp)
+
+This is a main class.
