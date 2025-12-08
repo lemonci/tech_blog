@@ -1127,13 +1127,13 @@ The current degree and maximum degred of sperical harmonic: `int active_sh_degre
 
 The parameters of 3D Gaussians: \
 `torch::Tensor xyz_`: position\
-`torch::Tensor features_dc_`: ???\
-`torch::Tensor features_rest_`: ???\
+`torch::Tensor features_dc_`: direct component, aka, the inherent color of the Gaussian when SH=0\
+`torch::Tensor features_rest_`: remaining components, the remaining spherical harmonics coefficients for SH≥1.\
 `torch:: Tensor opacity_`: opacity alpha\
 `torch::Tensor scaling_` : scaling factors\
 `torch::Tensor rotation_` : rotation factors\
 `torch::Tensor xyz_gradient_accum_` : accumulated gradient in the Gaussians\
-`torch::Tensor denom_` : ???\
+`torch::Tensor denom_` : denominator tensor used for computing the average gradient accumulation for each Gaussian point during densification\
 `torch::Tensor exist_since_iter_` : The iteration when this Gaussian is added to the map
 
 Optimizer: `std::shared_ptr <torch::optim::Adam> optimizer_`&#x20;
@@ -1232,7 +1232,7 @@ The headfile mainly defines the camera id, parameters, size of the images and ga
 
 `GaussianRasterizerFunction::backward` : backword propagation
 
-### `src/`[`gaussian_renderer`](https://github.com/KwanWaiPang/Photo-SLAM_comment/blob/main/src/gaussian_renderer.cpp)
+### `src/`[`gaussian_renderer.cpp`](https://github.com/KwanWaiPang/Photo-SLAM_comment/blob/main/src/gaussian_renderer.cpp)
 
 It only has one function `GaussianRenderer::render`, as a wrapper of the forward function above but it handles the calculation of covariance and spherical harmonic degree. It is similar to the [`gaussian_render/__init__.py`](https://github.com/graphdeco-inria/gaussian-splatting/blob/main/gaussian_renderer/__init__.py).
 
