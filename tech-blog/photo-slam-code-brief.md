@@ -1249,6 +1249,8 @@ else {
 }
 ```
 
+## Utility functions for Gaussians
+
 ### `src/`[`gaussian_keyframe.cpp`](https://github.com/KwanWaiPang/Photo-SLAM_comment/blob/main/src/gaussian_keyframe.cpp)
 
 We definitely shall not forget our favorite keyframing part of a SLAM system :)
