@@ -42,37 +42,34 @@ After everything is ready, we can start to create the SLAM system. The following
 2\. to create 3D Gaussian mapping system and \
 3\. to create 3D Gaussian viewer.
 
-{% code fullWidth="true" %}
-```
-    // Create SLAM system. It initializes all system threads and gets ready to process frames.
-    // Create the pointer pSLAM to point to the SLAM system
-    std::shared_ptr<ORB_SLAM3::System> pSLAM =
-        std::make_shared<ORB_SLAM3::System>(
+<pre data-full-width="true"><code><strong>    // Create SLAM system. It initializes all system threads and gets ready to process frames.
+</strong><strong>    // Create the pointer pSLAM to point to the SLAM system
+</strong>    std::shared_ptr&#x3C;ORB_SLAM3::System> pSLAM =
+        std::make_shared&#x3C;ORB_SLAM3::System>(
             argv[1], argv[2], ORB_SLAM3::System::RGBD);
     float imageScale = pSLAM->GetImageScale();
 
-    // Create GaussianMapper
-    // Create the pointer pGuasMapper to point to the 3D Gaussian Mapper,
-    // the input parameter is the SLAM system, configs for 3D Gaussian 
-    // and output directory
-    std::filesystem::path gaussian_cfg_path(argv[3]);
-    std::shared_ptr<GaussianMapper> pGausMapper =
-        std::make_shared<GaussianMapper>(
+<strong>    // Create GaussianMapper
+</strong><strong>    // Create the pointer pGuasMapper to point to the 3D Gaussian Mapper,
+</strong><strong>    // the input parameter is the SLAM system, configs for 3D Gaussian 
+</strong><strong>    // and output directory
+</strong>    std::filesystem::path gaussian_cfg_path(argv[3]);
+    std::shared_ptr&#x3C;GaussianMapper> pGausMapper =
+        std::make_shared&#x3C;GaussianMapper>(
             pSLAM, gaussian_cfg_path, output_dir, 0, device_type);
-    std::thread training_thd(&GaussianMapper::run, pGausMapper.get());
+    std::thread training_thd(&#x26;GaussianMapper::run, pGausMapper.get());
 
-    // Create Gaussian Viewer
-    std::thread viewer_thd;
-    std::shared_ptr<ImGuiViewer> pViewer;
-    // If the GUI config is true, we start the viewer thread and
-    // pass SLAM system pointer and 3D Gaussian Mapper pointer as input
-    if (use_viewer)
+<strong>    // Create Gaussian Viewer
+</strong>    std::thread viewer_thd;
+    std::shared_ptr&#x3C;ImGuiViewer> pViewer;
+<strong>    // If the GUI config is true, we start the viewer thread and
+</strong><strong>    // pass SLAM system pointer and 3D Gaussian Mapper pointer as input
+</strong>    if (use_viewer)
     {  
-        pViewer = std::make_shared<ImGuiViewer>(pSLAM, pGausMapper);
-        viewer_thd = std::thread(&ImGuiViewer::run, pViewer.get());
+        pViewer = std::make_shared&#x3C;ImGuiViewer>(pSLAM, pGausMapper);
+        viewer_thd = std::thread(&#x26;ImGuiViewer::run, pViewer.get());
     }
-```
-{% endcode %}
+</code></pre>
 
 4. Then we output the system information.\
    Load the RGB and depth information and check if they are valid.\
@@ -80,37 +77,35 @@ After everything is ready, we can start to create the SLAM system. The following
    Timer (`chrono` is the new timing method in C++ 11)\
    Import RGB, depth image and frame time into `pSLAM` system.
 
-{% code fullWidth="true" %}
-```
-// (The exiciting) Main loop.
-// Load all images in sequence and deal with them.
-    cv::Mat imRGB, imD;
-    for (int ni = 0; ni < nImages; ni++)
+<pre data-full-width="true"><code><strong>// (The exiciting) Main loop.
+</strong><strong>// Load all images in sequence and deal with them.
+</strong>    cv::Mat imRGB, imD;
+    for (int ni = 0; ni &#x3C; nImages; ni++)
     {
         if (pSLAM->isShutDown())
             break;
-        // Read image and depthmap from file
-        imRGB = cv::imread(std::string(argv[4]) + "/" + vstrImageFilenamesRGB[ni], cv::IMREAD_UNCHANGED);
+<strong>        // Read image and depthmap from file
+</strong>        imRGB = cv::imread(std::string(argv[4]) + "/" + vstrImageFilenamesRGB[ni], cv::IMREAD_UNCHANGED);
         cv::cvtColor(imRGB, imRGB, CV_BGR2RGB);
         imD = cv::imread(std::string(argv[4]) + "/" + vstrImageFilenamesD[ni], cv::IMREAD_UNCHANGED);
         double tframe = vTimestamps[ni];
 
-        // Handle the empty images
-        if (imRGB.empty())
+<strong>        // Handle the empty images
+</strong>        if (imRGB.empty())
         {
-            std::cerr << std::endl << "Failed to load image at: "
-                      << std::string(argv[4]) << "/" << vstrImageFilenamesRGB[ni] << std::endl;
+            std::cerr &#x3C;&#x3C; std::endl &#x3C;&#x3C; "Failed to load image at: "
+                      &#x3C;&#x3C; std::string(argv[4]) &#x3C;&#x3C; "/" &#x3C;&#x3C; vstrImageFilenamesRGB[ni] &#x3C;&#x3C; std::endl;
             return 1;
         }
         if (imD.empty())
         {
-            std::cerr << std::endl << "Failed to load depth image at: "
-                      << std::string(argv[4]) << "/" << vstrImageFilenamesD[ni] << std::endl;
+            std::cerr &#x3C;&#x3C; std::endl &#x3C;&#x3C; "Failed to load depth image at: "
+                      &#x3C;&#x3C; std::string(argv[4]) &#x3C;&#x3C; "/" &#x3C;&#x3C; vstrImageFilenamesD[ni] &#x3C;&#x3C; std::endl;
             return 1;
         }
 
-        // Scale the images
-        if (imageScale != 1.f)
+<strong>        // Scale the images
+</strong>        if (imageScale != 1.f)
         {
             int width = imRGB.cols * imageScale;
             int height = imRGB.rows * imageScale;
@@ -118,30 +113,29 @@ After everything is ready, we can start to create the SLAM system. The following
             cv::resize(imD, imD, cv::Size(width, height));
         }
 
-        // Timing
-        std::chrono::steady_clock::time_point t1 = std::chrono::steady_clock::now();
+<strong>        // Timing
+</strong>        std::chrono::steady_clock::time_point t1 = std::chrono::steady_clock::now();
 
-        // Pass the image to the SLAM system
-        pSLAM->TrackRGBD(imRGB, imD, tframe, std::vector<ORB_SLAM3::IMU::Point>(), vstrImageFilenamesRGB[ni]);
+<strong>        // Pass the image to the SLAM system
+</strong>        pSLAM->TrackRGBD(imRGB, imD, tframe, std::vector&#x3C;ORB_SLAM3::IMU::Point>(), vstrImageFilenamesRGB[ni]);
 
         std::chrono::steady_clock::time_point t2 = std::chrono::steady_clock::now();
 
-        double ttrack = std::chrono::duration_cast<std::chrono::duration<double>>(t2 - t1).count();
+        double ttrack = std::chrono::duration_cast&#x3C;std::chrono::duration&#x3C;double>>(t2 - t1).count();
 
         vTimesTrack[ni] = ttrack;
 
-        // Wait to load the next frame
-        double T = 0;
-        if (ni < nImages - 1)
+<strong>        // Wait to load the next frame
+</strong>        double T = 0;
+        if (ni &#x3C; nImages - 1)
             T = vTimestamps[ni + 1] - tframe;
         else if (ni > 0)
             T = tframe - vTimestamps[ni - 1];
 
-        if (ttrack < T)
+        if (ttrack &#x3C; T)
             usleep((T - ttrack) * 1e6);
     }
-```
-{% endcode %}
+</code></pre>
 
 After the main loop ends, close the SLAM system and visualization system, output the GPU peak usage and  tracking information. End the main thread.
 
@@ -163,11 +157,9 @@ The constructor doesn't only handle the input parameters but also operate on its
 
 ### The constructor of GaussianMapper
 
-{% code fullWidth="true" %}
-```
-//
-GaussianMapper::GaussianMapper(
-    std::shared_ptr<ORB_SLAM3::System> pSLAM,
+<pre data-full-width="true"><code><strong>// Constructor
+</strong>GaussianMapper::GaussianMapper(
+    std::shared_ptr&#x3C;ORB_SLAM3::System> pSLAM,
     std::filesystem::path gaussian_config_file_path,
     std::filesystem::path result_dir,
     int seed,//random seed is 0
@@ -185,58 +177,58 @@ GaussianMapper::GaussianMapper(
       large_trans_th_(1e-2f),
       training_report_interval_(0)
 {
-    // In standard C++ library, this code is used to set up the random seed.
-      std::srand(seed);/
-    // This is the random seed set up for PyTorch/litorch.
-    torch::manual_seed(seed);
+<strong>    // In standard C++ library, this code is used to set up the random seed.
+</strong>      std::srand(seed);
+<strong>    // This is the random seed set up for PyTorch/litorch.
+</strong>    torch::manual_seed(seed);
 
-    // Device(set up according to the input device)
-    if (device_type == torch::kCUDA && torch::cuda::is_available()) {
-        std::cout << "[Gaussian Mapper]CUDA available! Training on GPU." << std::endl;
+<strong>    // Device(set up according to the input device)
+</strong>    if (device_type == torch::kCUDA &#x26;&#x26; torch::cuda::is_available()) {
+        std::cout &#x3C;&#x3C; "[Gaussian Mapper]CUDA available! Training on GPU." &#x3C;&#x3C; std::endl;
         device_type_ = torch::kCUDA;
         model_params_.data_device_ = "cuda";
     }
     else {
-        std::cout << "[Gaussian Mapper]Training on CPU." << std::endl;
+        std::cout &#x3C;&#x3C; "[Gaussian Mapper]Training on CPU." &#x3C;&#x3C; std::endl;
         device_type_ = torch::kCPU;
         model_params_.data_device_ = "cpu";
     }
 
-    // Create the output directory for results
-    result_dir_ = result_dir;
+<strong>    // Create the output directory for results
+</strong>    result_dir_ = result_dir;
     CHECK_DIRECTORY_AND_CREATE_IF_NOT_EXISTS(result_dir)
 
-    // Read the config file
-    config_file_path_ = gaussian_config_file_path;
+<strong>    // Read the config file
+</strong>    config_file_path_ = gaussian_config_file_path;
     readConfigFromFile(gaussian_config_file_path);
 
-    // Set up the background color
-    std::vector<float> bg_color;
-    if (model_params_.white_background_)//If it is white
+<strong>    // Set up the background color
+</strong>    std::vector&#x3C;float> bg_color;
+    if (model_params_.white_background_) //If it is white
         bg_color = {1.0f, 1.0f, 1.0f};
     else //Otherwise it is black
         bg_color = {0.0f, 0.0f, 0.0f};
-    // Convert bg_color to a tensor and save it in the variable named background_
-    // Here we use torch::TensorOptions() to specify the options for the tensor
-    // including the data type to torch::kFloat32 and the device type
-    background_ = torch::tensor(bg_color,
+<strong>    // Convert bg_color to a tensor and save it in the variable named background_
+</strong><strong>    // Here we use torch::TensorOptions() to specify the options for the tensor
+</strong><strong>    // including the data type to torch::kFloat32 and the device type
+</strong>    background_ = torch::tensor(bg_color,
                     torch::TensorOptions().dtype(torch::kFloat32).device(device_type_));
     
     override_color_ = torch::empty(0, torch::TensorOptions().device(device_type_));
 
-    // Initialize scene and model including the SH parameter and 
-    // Initializ 3DGS tensor
-    gaussians_ = std::make_shared<GaussianModel>(model_params_);
-    scene_ = std::make_shared<GaussianScene>(model_params_);
+<strong>    // Initialize scene and model including the SH parameter 
+</strong><strong>    // Initializ 3DGS tensor
+</strong>    gaussians_ = std::make_shared&#x3C;GaussianModel>(model_params_);
+    scene_ = std::make_shared&#x3C;GaussianScene>(model_params_);
 
-    // Mode (If there is no SLAM results then return)
-    if (!pSLAM) {
+<strong>    // Mode (If there is no SLAM results then return)
+</strong>    if (!pSLAM) {
         // NO SLAM
         return;
     }
 
-    // Specify tensor types
-    switch (pSLAM->getSensorType())
+<strong>    // Specify tensor types
+</strong>    switch (pSLAM->getSensorType())
     {
     case ORB_SLAM3::System::MONOCULAR:
     case ORB_SLAM3::System::IMU_MONOCULAR:
@@ -269,27 +261,27 @@ GaussianMapper::GaussianMapper(
     break;
     }
 
-    // Cameras
-    // TODO: not only monocular
+<strong>    // Cameras
+</strong>    // TODO: not only monocular
     auto settings = pSLAM->getSettings();
     cv::Size SLAM_im_size = settings->newImSize();
 
-    //Get the undisort parameters of the camera
-    UndistortParams undistort_params(
+<strong>    //Get the undistortion parameters of the camera
+</strong>    UndistortParams undistort_params(
         SLAM_im_size,
         settings->camera1DistortionCoef()
     );
 
-    //Get all cameras and the intrinsics accordingly
-    auto vpCameras = pSLAM->getAtlas()->GetAllCameras();
-    for (auto& SLAM_camera : vpCameras) {
+<strong>    //Get all cameras and the intrinsics accordingly in a loop
+</strong>    auto vpCameras = pSLAM->getAtlas()->GetAllCameras();
+    for (auto&#x26; SLAM_camera : vpCameras) {
         Camera camera;//Create a camera class
 
-        //Get the id of the camera
-        camera.camera_id_ = SLAM_camera->GetId();
+<strong>        //Get the id of the camera
+</strong>        camera.camera_id_ = SLAM_camera->GetId();
 
-        //Get the type of the camera to fetch the instrinc matrix
-        if (SLAM_camera->GetType() == ORB_SLAM3::GeometricCamera::CAM_PINHOLE) {
+<strong>        //Get the type of the camera to fetch the instrinc matrix
+</strong>        if (SLAM_camera->GetType() == ORB_SLAM3::GeometricCamera::CAM_PINHOLE) {
             camera.setModelId(Camera::CameraModelType::PINHOLE);
             float SLAM_fx = SLAM_camera->getParameter(0);
             float SLAM_fy = SLAM_camera->getParameter(1);
@@ -298,8 +290,8 @@ GaussianMapper::GaussianMapper(
 
             // Old K, i.e. K in SLAM
             cv::Mat K = (
-                cv::Mat_<float>(3, 3)
-                    << SLAM_fx, 0.f, SLAM_cx,
+                cv::Mat_&#x3C;float>(3, 3)
+                    &#x3C;&#x3C; SLAM_fx, 0.f, SLAM_cx,
                         0.f, SLAM_fy, SLAM_cy,
                         0.f, 0.f, 1.f
             );
@@ -308,18 +300,18 @@ GaussianMapper::GaussianMapper(
             //                                              : graphics_utils::roundToIntegerMultipleOf16(
             //                                                    undistort_params.old_size_.width);
             camera.width_ = undistort_params.old_size_.width;
-            float x_ratio = static_cast<float>(camera.width_) / undistort_params.old_size_.width;
+            float x_ratio = static_cast&#x3C;float>(camera.width_) / undistort_params.old_size_.width;
 
             // camera.height_ = this->sensor_type_ == STEREO ? undistort_params.old_size_.height
             //                                               : graphics_utils::roundToIntegerMultipleOf16(
             //                                                     undistort_params.old_size_.height);
             camera.height_ = undistort_params.old_size_.height;
-            float y_ratio = static_cast<float>(camera.height_) / undistort_params.old_size_.height;
+            float y_ratio = static_cast&#x3C;float>(camera.height_) / undistort_params.old_size_.height;
 
             camera.num_gaus_pyramid_sub_levels_ = num_gaus_pyramid_sub_levels_;
             camera.gaus_pyramid_width_.resize(num_gaus_pyramid_sub_levels_);
             camera.gaus_pyramid_height_.resize(num_gaus_pyramid_sub_levels_);
-            for (int l = 0; l < num_gaus_pyramid_sub_levels_; ++l) {
+            for (int l = 0; l &#x3C; num_gaus_pyramid_sub_levels_; ++l) {
                 camera.gaus_pyramid_width_[l] = camera.width_ * this->kf_gaus_pyramid_factors_[l];
                 camera.gaus_pyramid_height_[l] = camera.height_ * this->kf_gaus_pyramid_factors_[l];
             }
@@ -330,14 +322,14 @@ GaussianMapper::GaussianMapper(
             camera.params_[3]/*new cy*/= SLAM_cy * y_ratio;
 
             cv::Mat K_new = (
-                cv::Mat_<float>(3, 3)
-                    << camera.params_[0], 0.f, camera.params_[2],
+                cv::Mat_&#x3C;float>(3, 3)
+                    &#x3C;&#x3C; camera.params_[0], 0.f, camera.params_[2],
                         0.f, camera.params_[1], camera.params_[3],
                         0.f, 0.f, 1.f
             );
 
-            // Undistortion
-            if (this->sensor_type_ == MONOCULAR || this->sensor_type_ == RGBD)
+<strong>            // Undistortion
+</strong>            if (this->sensor_type_ == MONOCULAR || this->sensor_type_ == RGBD)
                 undistort_params.dist_coeff_.copyTo(camera.dist_coeff_);
 
             camera.initUndistortRectifyMapAndMask(K, SLAM_im_size, K_new, true);
@@ -369,12 +361,12 @@ GaussianMapper::GaussianMapper(
                 if (this->stereo_Q_.cols != 4) {
                     this->stereo_Q_ = cv::Mat(4, 4, CV_32FC1);
                     this->stereo_Q_.setTo(0.0f);
-                    this->stereo_Q_.at<float>(0, 0) = 1.0f;
-                    this->stereo_Q_.at<float>(0, 3) = -camera.params_[2];
-                    this->stereo_Q_.at<float>(1, 1) = 1.0f;
-                    this->stereo_Q_.at<float>(1, 3) = -camera.params_[3];
-                    this->stereo_Q_.at<float>(2, 3) = camera.params_[0];
-                    this->stereo_Q_.at<float>(3, 2) = 1.0f / stereo_baseline_length_;
+                    this->stereo_Q_.at&#x3C;float>(0, 0) = 1.0f;
+                    this->stereo_Q_.at&#x3C;float>(0, 3) = -camera.params_[2];
+                    this->stereo_Q_.at&#x3C;float>(1, 1) = 1.0f;
+                    this->stereo_Q_.at&#x3C;float>(1, 3) = -camera.params_[3];
+                    this->stereo_Q_.at&#x3C;float>(2, 3) = camera.params_[0];
+                    this->stereo_Q_.at&#x3C;float>(3, 2) = 1.0f / stereo_baseline_length_;
                 }
             }
         }
@@ -392,8 +384,7 @@ GaussianMapper::GaussianMapper(
         this->scene_->addCamera(camera);//In the end, we place the camera into the scene
     }
 }
-```
-{% endcode %}
+</code></pre>
 
 ### `void run()`&#x20;
 
@@ -401,34 +392,32 @@ GaussianMapper::GaussianMapper(
 
 
 
-{% code fullWidth="true" %}
-```
-void GaussianMapper::run()
+<pre data-full-width="true"><code>void GaussianMapper::run()
 {
-    // First loop: Initial gaussian mapping
-    // Initially, we use a loop to initialize the 3D Gaussian mapping process and single iteration training
-    // The loop will end once the initialization is executed and the first training iteration is finished.
-    while (!isStopped()) {
-        // Check conditions for initial mapping
-        // We need ORBSLAM is running and the number of keyframes is over a certain amount
-        if (hasMetInitialMappingConditions()) {
+<strong>    // First loop: Initial gaussian mapping
+</strong><strong>    // Initially, we use a loop to initialize the 3D Gaussian mapping process and single iteration training
+</strong><strong>    // The loop will end once the initialization is executed and the first training iteration is finished.
+</strong>    while (!isStopped()) {
+<strong>        // Check conditions for initial mapping
+</strong><strong>        // We need ORBSLAM still running and the number of keyframes is over a certain amount
+</strong>        if (hasMetInitialMappingConditions()) {
 
-            //Clean the map of orbslam3
-            pSLAM_->getAtlas()->clearMappingOperation();
+<strong>            //Clean the map of orbslam3 ???
+</strong>            pSLAM_->getAtlas()->clearMappingOperation();
 
-            // Get initial sparse map from orbSLAM's current map
-            auto pMap = pSLAM_->getAtlas()->GetCurrentMap();
-            std::vector<ORB_SLAM3::KeyFrame*> vpKFs;
-            std::vector<ORB_SLAM3::MapPoint*> vpMPs;
+<strong>            // Get initial sparse map from orbSLAM's current map
+</strong>            auto pMap = pSLAM_->getAtlas()->GetCurrentMap();
+            std::vector&#x3C;ORB_SLAM3::KeyFrame*> vpKFs;
+            std::vector&#x3C;ORB_SLAM3::MapPoint*> vpMPs;
             {
-                std::unique_lock<std::mutex> lock_map(pMap->mMutexMapUpdate);
-                //Get keyframes
-                vpKFs = pMap->GetAllKeyFrames();
-                //Get map points
-                vpMPs = pMap->GetAllMapPoints();
+                std::unique_lock&#x3C;std::mutex> lock_map(pMap->mMutexMapUpdate);
+<strong>                //Get keyframes
+</strong>                vpKFs = pMap->GetAllKeyFrames();
+<strong>                //Get map points
+</strong>                vpMPs = pMap->GetAllMapPoints();
 
-                //Iterate all map points to get their 3D coordinates and colors. Then place them into scene_
-                for (const auto& pMP : vpMPs){
+<strong>                //Iterate all map points to get their 3D coordinates and colors. Then place them into scene_
+</strong>                for (const auto&#x26; pMP : vpMPs){
                     Point3D point3D;
                     auto pos = pMP->GetWorldPos();
                     point3D.xyz_(0) = pos.x();
@@ -439,30 +428,30 @@ void GaussianMapper::run()
                     point3D.color_(1) = color(1);
                     point3D.color_(2) = color(2);
 
-                    //Place the points and colors into cached_point_cloud_
-                    scene_->cachePoint3D(pMP->mnId, point3D);
+<strong>                    //Place the points and colors into cached_point_cloud_
+</strong>                    scene_->cachePoint3D(pMP->mnId, point3D);
                 }
 
-                //Then iterate all keyframes
-                for (const auto& pKF : vpKFs){
+<strong>                //Then iterate all keyframes
+</strong>                for (const auto&#x26; pKF : vpKFs){
                     //Create a new Gaussian keyframe based on the keyframe id and current iteration number
-                    std::shared_ptr<GaussianKeyframe> new_kf = std::make_shared<GaussianKeyframe>(pKF->mnId, getIteration());
+                    std::shared_ptr&#x3C;GaussianKeyframe> new_kf = std::make_shared&#x3C;GaussianKeyframe>(pKF->mnId, getIteration());
                     //The closet and farest depth
                     new_kf->zfar_ = z_far_;
                     new_kf->znear_ = z_near_;
 
-                    //Get pose
-                    auto pose = pKF->GetPose();//获取关键帧对应的pose
+<strong>                    //Get pose of the according keyframe
+</strong>                    auto pose = pKF->GetPose();
                     //Set pose
                     new_kf->setPose(
-                        pose.unit_quaternion().cast<double>(),
-                        pose.translation().cast<double>());
+                        pose.unit_quaternion().cast&#x3C;double>(),
+                        pose.translation().cast&#x3C;double>());
 
-                    // Get image information
-                    cv::Mat imgRGB_undistorted, imgAux_undistorted;
+<strong>                    // Get image information
+</strong>                    cv::Mat imgRGB_undistorted, imgAux_undistorted;
                     try {
                         // Camera
-                        Camera& camera = scene_->cameras_.at(pKF->mpCamera->GetId());
+                        Camera&#x26; camera = scene_->cameras_.at(pKF->mpCamera->GetId());
                         new_kf->setCameraParams(camera);
 
                         // Image (left if STEREO)
@@ -471,8 +460,8 @@ void GaussianMapper::run()
                             imgRGB_undistorted = imgRGB;
                         else
                             camera.undistortImage(imgRGB, imgRGB_undistorted);
-                        // Auxiliary Image
-                        cv::Mat imgAux = pKF->imgAuxiliary;
+<strong>                        // Auxiliary Image ???
+</strong>                        cv::Mat imgAux = pKF->imgAuxiliary;
                         if (this->sensor_type_ == RGBD)
                             camera.undistortImage(imgAux, imgAux_undistorted);
                         else
@@ -488,37 +477,37 @@ void GaussianMapper::run()
                     catch (std::out_of_range) {
                         throw std::runtime_error("[GaussianMapper::run]KeyFrame Camera not found!");
                     }
-                    // Calculate the transformation matrix (in tensor format)
-                    new_kf->computeTransformTensors();
+<strong>                    // Calculate the transformation matrix (in tensor format)
+</strong>                    new_kf->computeTransformTensors();
 
-                    // Then add the keyframe into the scene
-                    scene_->addKeyframe(new_kf, &kfid_shuffled_);
+<strong>                    // Then add the keyframe into the scene
+</strong>                    scene_->addKeyframe(new_kf, &#x26;kfid_shuffled_);
 
-                    //Increase the keyframe's used time???
-                    increaseKeyframeTimesOfUse(new_kf, newKeyframeTimesOfUse());
+<strong>                    //Increase the keyframe's used time ???
+</strong>                    increaseKeyframeTimesOfUse(new_kf, newKeyframeTimesOfUse());
 
-                    // Features
-                    std::vector<float> pixels;
-                    std::vector<float> pointsLocal;
+<strong>                    // Features ???
+</strong>                    std::vector&#x3C;float> pixels;
+                    std::vector&#x3C;float> pointsLocal;
                     pKF->GetKeypointInfo(pixels, pointsLocal);
-                    // Pass the vector including the pixel and local coordinates to the member variables
-                    // kps_pixel_ and kps_point_local_ of the new keyframe new_kf
-                    // This is to avoid copying and improve efficiency
-                    new_kf->kps_pixel_ = std::move(pixels);
+<strong>                    // Pass the vector including the pixel and local coordinates to the member variables
+</strong><strong>                    // kps_pixel_ and kps_point_local_ of the new keyframe new_kf
+</strong><strong>                    // This is to avoid copying and improve efficiency
+</strong>                    new_kf->kps_pixel_ = std::move(pixels);
                     new_kf->kps_point_local_ = std::move(pointsLocal);
                     new_kf->img_undist_ = imgRGB_undistorted;
                     new_kf->img_auxiliary_undist_ = imgAux_undistorted;
                 }
             }
 
-            // Prepare multi resolution images for training (for Gausisan pyramid)
-            for (auto& kfit : scene_->keyframes()) {
+<strong>            // Prepare multi resolution images for training (for Gausisan pyramid)
+</strong>            for (auto&#x26; kfit : scene_->keyframes()) {
                 auto pkf = kfit.second;
                 if (device_type_ == torch::kCUDA) {
                     cv::cuda::GpuMat img_gpu;
                     img_gpu.upload(pkf->img_undist_);
                     pkf->gaus_pyramid_original_image_.resize(num_gaus_pyramid_sub_levels_);
-                    for (int l = 0; l < num_gaus_pyramid_sub_levels_; ++l) {
+                    for (int l = 0; l &#x3C; num_gaus_pyramid_sub_levels_; ++l) {
                         cv::cuda::GpuMat img_resized;
                         cv::cuda::resize(img_gpu, img_resized,
                                         cv::Size(pkf->gaus_pyramid_width_[l], pkf->gaus_pyramid_height_[l]));
@@ -528,7 +517,7 @@ void GaussianMapper::run()
                 }
                 else {
                     pkf->gaus_pyramid_original_image_.resize(num_gaus_pyramid_sub_levels_);
-                    for (int l = 0; l < num_gaus_pyramid_sub_levels_; ++l) {
+                    for (int l = 0; l &#x3C; num_gaus_pyramid_sub_levels_; ++l) {
                         cv::Mat img_resized;
                         cv::resize(pkf->img_undist_, img_resized,
                                 cv::Size(pkf->gaus_pyramid_width_[l], pkf->gaus_pyramid_height_[l]));
@@ -538,23 +527,23 @@ void GaussianMapper::run()
                 }
             }
 
-            // Prepare for training (basic setup for training)
-            {
-                std::unique_lock<std::mutex> lock_render(mutex_render_);
+<strong>            // Prepare for training (basic setup for training)
+</strong>            {
+                std::unique_lock&#x3C;std::mutex> lock_render(mutex_render_);
                 // Get the edge of scene from the point cloud
-                scene_->cameras_extent_ = std::get<1>(scene_->getNerfppNorm());
+                scene_->cameras_extent_ = std::get&#x3C;1>(scene_->getNerfppNorm());
                 // Create the Gaussian model based on the cached_point_cloud_ and the scene edge
                 gaussians_->createFromPcd(scene_->cached_point_cloud_, scene_->cameras_extent_);
-                std::unique_lock<std::mutex> lock(mutex_settings_);
+                std::unique_lock&#x3C;std::mutex> lock(mutex_settings_);
                 // Setup the parameters for training using vector
                 gaussians_->trainingSetup(opt_params_);
             }
 
-            // Invoke training once(1st iteration)
-            trainForOneIteration();
+<strong>            // Invoke training once(1st iteration)
+</strong>            trainForOneIteration();
 
-            // Finish initial mapping loop only after the map initialization and one iteration of training
-            initial_mapped_ = true;
+<strong>            // Finish initial mapping loop only after the map initialization and one iteration of training
+</strong>            initial_mapped_ = true;
             break;
         }
         else if (pSLAM_->isShutDown()) {
@@ -566,11 +555,11 @@ void GaussianMapper::run()
         }
     }
 
-    // Second loop: Incremental gaussian mapping
-    int SLAM_stop_iter = 0;
+<strong>    // Second loop: Incremental gaussian mapping
+</strong>    int SLAM_stop_iter = 0;
     while (!isStopped()) {
-        // Check conditions for incremental mapping
-        if (hasMetIncrementalMappingConditions()) {
+<strong>        // Check conditions for incremental mapping
+</strong>        if (hasMetIncrementalMappingConditions()) {
             // If the conditions for incremental mapping is fulfilled, then do mapping
             // At the same time, add new Gaussians in the Gaussian map
             combineMappingOperations();
@@ -579,10 +568,10 @@ void GaussianMapper::run()
                 cullKeyframes();
         }
 
-        // Invoke training once
-        trainForOneIteration();
-        // Here we continue the training until the maximum training iteration is reached
-
+<strong>        // Invoke training once
+</strong>        trainForOneIteration();
+<strong>        // Here we continue the training until the maximum training iteration is reached
+</strong>
         if (pSLAM_->isShutDown()) {
             SLAM_stop_iter = getIteration();
             SLAM_ended_ = true;
@@ -592,24 +581,23 @@ void GaussianMapper::run()
             break;
     }
 
-    // Third loop: Tail gaussian optimization
-    int densify_interval = densifyInterval();
+<strong>    // Third loop: Tail gaussian optimization
+</strong>    int densify_interval = densifyInterval();
     int n_delay_iters = densify_interval * 0.8;
-    while (getIteration() - SLAM_stop_iter <= n_delay_iters || getIteration() % densify_interval <= n_delay_iters || isKeepingTraining()) {
+    while (getIteration() - SLAM_stop_iter &#x3C;= n_delay_iters || getIteration() % densify_interval &#x3C;= n_delay_iters || isKeepingTraining()) {
         trainForOneIteration();
         densify_interval = densifyInterval();
         n_delay_iters = densify_interval * 0.8;
     }
 
-    // Save and clear
-    renderAndRecordAllKeyframes("_shutdown");
+<strong>    // Save and clear
+</strong>    renderAndRecordAllKeyframes("_shutdown");
     savePly(result_dir_ / (std::to_string(getIteration()) + "_shutdown") / "ply");
     writeKeyframeUsedTimes(result_dir_ / "used_times", "final");
 
     signalStop();
 }
-```
-{% endcode %}
+</code></pre>
 
 `void trainColmap()` is for colmap training example only. Read the point cloud, train 3D Gaussians and save, it is similar to the run function.
 
