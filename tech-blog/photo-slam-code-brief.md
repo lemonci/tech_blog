@@ -459,7 +459,7 @@ The constructor doesn't only handle the input parameters but also operate on its
                             imgRGB_undistorted = imgRGB;
                         else
                             camera.undistortImage(imgRGB, imgRGB_undistorted);
-<strong>                        // Auxiliary Image ???
+<strong>                        // Depth Image, which is auxiliary as it support mono.
 </strong>                        cv::Mat imgAux = pKF->imgAuxiliary;
                         if (this->sensor_type_ == RGBD)
                             camera.undistortImage(imgAux, imgAux_undistorted);
@@ -482,10 +482,11 @@ The constructor doesn't only handle the input parameters but also operate on its
 <strong>                    // Then add the keyframe into the scene
 </strong>                    scene_->addKeyframe(new_kf, &#x26;kfid_shuffled_);
 
-<strong>                    //Increase the keyframe's used time ???
+<strong>                    //Increase the keyframe's used time to prevent using the same keyframe all the time
 </strong>                    increaseKeyframeTimesOfUse(new_kf, newKeyframeTimesOfUse());
 
-<strong>                    // Features ???
+<strong>                    // Features positions from ORB-SLAM3::KeyFrame::GetKeypointInfo.
+</strong><strong>                    // pixels are 2D features in images, pointsLocals are 3D feature points in the space.
 </strong>                    std::vector&#x3C;float> pixels;
                     std::vector&#x3C;float> pointsLocal;
                     pKF->GetKeypointInfo(pixels, pointsLocal);
