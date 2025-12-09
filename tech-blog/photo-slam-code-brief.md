@@ -388,7 +388,7 @@ The constructor doesn't only handle the input parameters but also operate on its
 
 ### `void run()`&#x20;
 
-&#x20;`void run()` is the main main process, read the camera pose and point cloud, prepare the images of multiple resolutions and call the train function `trainForOneIteration()` .
+&#x20;`void run()` is the main process. It reads the camera pose and point cloud, prepares the images of multiple resolutions and calls the train function `trainForOneIteration()` .
 
 <pre data-full-width="true"><code>void GaussianMapper::run()
 {
