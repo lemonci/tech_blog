@@ -1623,7 +1623,99 @@ void GaussianModel::scaledTransformationPostfix(
 
 </code></pre>
 
+### Training related methods
 
+<pre><code>void GaussianModel::trainingSetup(const GaussianOptimizationParams&#x26; training_args)
+{
+    setPercentDense(training_args.percent_dense_);
+    this->xyz_gradient_accum_ = torch::zeros({this->getXYZ().size(0), 1}, torch::TensorOptions().device(device_type_));
+    this->denom_ = torch::zeros({this->getXYZ().size(0), 1}, torch::TensorOptions().device(device_type_));
+
+    torch::optim::AdamOptions adam_options;
+    adam_options.set_lr(0.0);
+    adam_options.eps() = 1e-15;
+
+<strong>    //ATTENTION: vector is used here.
+</strong><strong>    this->optimizer_.reset(new torch::optim::Adam(Tensor_vec_xyz_, adam_options));
+</strong>    optimizer_->param_groups()[0].options().set_lr(training_args.position_lr_init_ * this->spatial_lr_scale_);
+
+    optimizer_->add_param_group(Tensor_vec_feature_dc_);
+    optimizer_->param_groups()[1].options().set_lr(training_args.feature_lr_);
+
+    optimizer_->add_param_group(Tensor_vec_feature_rest_);
+    optimizer_->param_groups()[2].options().set_lr(training_args.feature_lr_ / 20.0);
+
+    optimizer_->add_param_group(Tensor_vec_opacity_);
+    optimizer_->param_groups()[3].options().set_lr(training_args.opacity_lr_);
+
+    optimizer_->add_param_group(Tensor_vec_scaling_);
+    optimizer_->param_groups()[4].options().set_lr(training_args.scaling_lr_);
+
+    optimizer_->add_param_group(Tensor_vec_rotation_);
+    optimizer_->param_groups()[5].options().set_lr(training_args.rotation_lr_);
+
+    // get_expon_lr_func
+    lr_init_ = training_args.position_lr_init_ * this->spatial_lr_scale_;
+    lr_final_ = training_args.position_lr_final_ * this->spatial_lr_scale_;
+    lr_delay_mult_ = training_args.position_lr_delay_mult_;
+    max_steps_ = training_args.position_lr_max_steps_;
+}
+</code></pre>
+
+<pre><code><strong>// Replace certain indexed parameter in the optimizer and update
+</strong><strong>// the corresponding state
+</strong>
+torch::Tensor GaussianModel::replaceTensorToOptimizer(torch::Tensor&#x26; tensor, int tensor_idx)
+{
+<strong>    // Get the tensor_idx place parameter's first parameter, store it in param
+</strong>    auto&#x26; param = this->optimizer_->param_groups()[tensor_idx].params()[0];
+
+<strong>    // Get the state dictionary of the optimizer
+</strong><strong>    // Store it in state
+</strong>    auto&#x26; state = optimizer_->state();
+
+<strong>    // Get the key value of the tensor, convert it into string
+</strong><strong>    // Use as the primary key to mark this parameter ???
+</strong>    auto key = c10::guts::to_string(param.unsafeGetTensorImpl());
+
+<strong>    // Get the state object corresponding to the parameter from the state dictionary
+</strong><strong>    // Assume the object's type is AdamParamState, and store it in stored_state 
+</strong>    auto&#x26; stored_state = static_cast&#x3C;torch::optim::AdamParamState&#x26;>(*state[key]);
+
+<strong>    // Create a new parameter state object
+</strong>    auto new_state = std::make_unique&#x3C;torch::optim::AdamParamState>();
+
+<strong>    // Set the new state object's step aas the new state's step
+</strong>    new_state->step(stored_state.step());
+
+<strong>    // Initialize the expoentially weighted average of the new state object
+</strong>    // as a zero value tensor with the same size of the given tensor
+    new_state->exp_avg(torch::zeros_like(tensor));
+    
+<strong>    // Initialize the squared-expoentially weighted average of the new state object
+</strong><strong>    // as a zero value tensor with the same size of the given tensor
+</strong>    new_state->exp_avg_sq(torch::zeros_like(tensor));
+    
+    // new_state->max_exp_avg_sq(stored_state.max_exp_avg_sq().clone()); 
+    // needed only when options.amsgrad(true), which is false by default
+
+<strong>    // Remove the previous corresponding state objects from the state dictionary
+</strong>    state.erase(key);
+
+<strong>    // Replace the parameter with the new tensor, and make sure it needs gradients
+</strong>    param = tensor.requires_grad_();
+
+<strong>    // Get the new key values from the new tensor can convert it into a string
+</strong>    key = c10::guts::to_string(param.unsafeGetTensorImpl());
+
+<strong>    // Link the new param state to the new param, and add into the state dictionary
+</strong>    state[key] = std::move(new_state);
+
+    auto optimizable_tensors = param;
+    return optimizable_tensors;
+}
+
+</code></pre>
 
 ## `src/`[`gaussian_scene.cpp`](https://github.com/KwanWaiPang/Photo-SLAM_comment/blob/main/src/gaussian_scene.cpp)
 
