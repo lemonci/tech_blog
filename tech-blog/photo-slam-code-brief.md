@@ -1522,7 +1522,106 @@ There are two overloaded versions of `void GaussianModel::increasePcd` , one is 
 }
 </code></pre>
 
+### Selected transformation methods
 
+<pre><code><strong>// This method mainly updates the class member variables xyz_ and scaling_
+</strong><strong>// It stores the updated tensor into the corresponding parameter groups of the optimizer
+</strong>
+void GaussianModel::scaledTransformationPostfix(
+    torch::Tensor&#x26; new_xyz,
+    torch::Tensor&#x26; new_scaling)
+{
+<strong>    // param_groups[0] = xyz_, replace the first parameter of the parameter group
+</strong><strong>    // with the new input new_xyz, and save the results into optimizable_xyz
+</strong>    torch::Tensor optimizable_xyz = this->replaceTensorToOptimizer(new_xyz, 0);
+    
+<strong>    // param_groups[4] = scaling_, replace the fifth parameter of the parameter group
+</strong><strong>    // with the new input tensor new_scaling, and save the results into optimizable_scaling
+</strong>    torch::Tensor optimizable_scaling = this->replaceTensorToOptimizer(new_scaling, 4);
+
+<strong>    // Allocate the replaced optimized tensor to the member variables xyz_ and scaling_。
+</strong>    this->xyz_ = optimizable_xyz;
+    this->scaling_ = optimizable_scaling;
+
+<strong>    // Add these tensors into the class member Tensor_vec_xyz_ and Tensor_vec_scaling_
+</strong>    this->Tensor_vec_xyz_ = {this->xyz_};
+    this->Tensor_vec_scaling_ = {this->scaling_};
+}
+
+</code></pre>
+
+<pre><code>void GaussianModel::scaledTransformVisiblePointsOfKeyframe(
+    torch::Tensor&#x26; point_not_transformed_flags,//If this point has been transformed
+    torch::Tensor&#x26; diff_pose,//the pose differnce of the point
+    torch::Tensor&#x26; kf_world_view_transform,
+    torch::Tensor&#x26; kf_full_proj_transform,//the projection of the keyframe
+    const int kf_creation_iter,//the iteration when the keyframe is created
+    const int stable_num_iter_existence,
+    int&#x26; num_transformed,
+    const float scale)
+{
+    torch::NoGradGuard no_grad;//During the creation, no gradient calculation allowed
+
+<strong>    // Get all current Gaussians
+</strong>    torch::Tensor points = this->getXYZ();
+    torch::Tensor rots = this->getRotationActivation();
+    // torch::Tensor scales = this->scaling_;// * scale;
+
+<strong>    // Check if the difference between exist_since_iter_ and kf_creation_iter 
+</strong><strong>    // is less than stable_num_iter_existence. If yes, return True. Otherwise return False
+</strong>    // torch::where(condition, x, y) is a function in torch, it select x and y 
+    // according to the condition. If condition is true, select x, otherwise select y.
+
+    torch::Tensor point_unstable_flags = torch::where(
+        torch::abs(this->exist_since_iter_ - kf_creation_iter) &#x3C; stable_num_iter_existence,
+        true,
+        false);
+
+    //Scale the point cloud and mark visible points
+    scaleAndTransformThenMarkVisiblePoints(
+        points,//All Gaussian points at the moment
+        rots,
+        point_not_transformed_flags,
+<strong>        point_unstable_flags,//Mark if this point is stable, the point's appearance and
+</strong><strong>        // the keyframe's appearance should be close
+</strong>        diff_pose,
+        kf_world_view_transform,
+        kf_full_proj_transform,
+        num_transformed,
+        scale
+    );
+
+// torch::Tensor point_cloud_copy = points.clone();
+// torch::Tensor dist2 = torch::clamp_min(distCUDA2(point_cloud_copy), 0.0000001);
+// torch::Tensor scales = torch::log(torch::sqrt(dist2));
+// auto scales_ndimension = scales.ndimension();
+// scales = scales.unsqueeze(scales_ndimension).repeat({1, 3});
+
+    // Postfix
+    // ==================================
+    // param_groups[0] = xyz_
+    // param_groups[1] = feature_dc_
+    // param_groups[2] = feature_rest_
+    // param_groups[3] = opacity_
+    // param_groups[4] = scaling_
+    // param_groups[5] = rotation_
+    // ==================================
+
+<strong>    // After we mark the visible points, we need to replace them
+</strong>    torch::Tensor optimizable_xyz = this->replaceTensorToOptimizer(points, 0);
+    // torch::Tensor optimizable_scaling = this->replaceTensorToOptimizer(scales, 4);
+    torch::Tensor optimizable_rots = this->replaceTensorToOptimizer(rots, 5);
+
+    this->xyz_ = optimizable_xyz;
+    // this->scaling_ = optimizable_scaling;
+    this->rotation_ = optimizable_rots;
+
+    this->Tensor_vec_xyz_ = {this->xyz_};
+    // this->Tensor_vec_scaling_ = {this->scaling_};
+    this->Tensor_vec_rotation_ = {this->rotation_};
+}
+
+</code></pre>
 
 
 
