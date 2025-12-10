@@ -1217,7 +1217,30 @@ GaussianModel::GaussianModel(const int sh_degree)
 ```
 {% endcode %}
 
-##
+```
+// The parameter-based constructor, similar to the default one 
+// but initialize the GaussianModel with parameters
+GaussianModel::GaussianModel(const GaussianModelParams &model_params)
+    : active_sh_degree_(0), spatial_lr_scale_(0.0),
+      lr_delay_steps_(0), lr_delay_mult_(1.0), max_steps_(1000000)
+{
+    this->max_sh_degree_ = model_params.sh_degree_;
+
+    // Device
+    if (model_params.data_device_ == "cuda")
+        this->device_type_ = torch::kCUDA;
+    else
+        this->device_type_ = torch::kCPU;
+
+    //The corresponding tensors for the 3D Gaussians are all empty, including:
+    // xyz_, features_dc_, features_rest_, scaling_, rotation_, opacity_, 
+    // max_radii2D_, xyz_gradient_accum_ and denom_
+    
+    GAUSSIAN_MODEL_INIT_TENSORS(this->device_type_)
+}
+```
+
+
 
 ## `src/`[`gaussian_scene.cpp`](https://github.com/KwanWaiPang/Photo-SLAM_comment/blob/main/src/gaussian_scene.cpp)
 
