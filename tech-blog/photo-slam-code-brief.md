@@ -1190,6 +1190,35 @@ The following functions handle the densification, clone, pruning and split of Ga
 
 `void scaledTransformVisiblePointsOfKeyframe()` prepares and marks the model's Gaussian 3D points that are visible from a given keyframe, applying a uniform scale and view/projection transforms, then registers the transformed point and rotation tensors for optimization.
 
+### The Constructor(s)
+
+There are two constructors in `gaussian_model.cpp`. The default parameterized constructor takes a single `int` parameter (`sh_degree`) as the input, allowing simple initialization with just the spherical harmonics degree. And the parameter-based constructor takes a `const GaussianModelParams&` parameter (a configuration struct). It provides more flexibility by accepting a full parameter object
+
+{% code fullWidth="false" %}
+```
+// The default parameterized constructor 
+GaussianModel::GaussianModel(const int sh_degree)
+    : active_sh_degree_(0), spatial_lr_scale_(0.0),
+      lr_delay_steps_(0), lr_delay_mult_(1.0), max_steps_(1000000)
+{
+    this->max_sh_degree_ = sh_degree;
+
+    // Device
+    if (torch::cuda::is_available())
+        this->device_type_ = torch::kCUDA;
+    else
+        this->device_type_ = torch::kCPU;
+    
+    //The corresponding tensors for the 3D Gaussians are all empty, including:
+    // xyz_, features_dc_, features_rest_, scaling_, rotation_, opacity_, 
+    // max_radii2D_, xyz_gradient_accum_ and denom_
+    GAUSSIAN_MODEL_INIT_TENSORS(this->device_type_)
+}
+```
+{% endcode %}
+
+##
+
 ## `src/`[`gaussian_scene.cpp`](https://github.com/KwanWaiPang/Photo-SLAM_comment/blob/main/src/gaussian_scene.cpp)
 
 ### Head File
