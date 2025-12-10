@@ -1194,33 +1194,29 @@ The following functions handle the densification, clone, pruning and split of Ga
 
 There are two constructors in `gaussian_model.cpp`. The default parameterized constructor takes a single `int` parameter (`sh_degree`) as the input, allowing simple initialization with just the spherical harmonics degree. And the parameter-based constructor takes a `const GaussianModelParams&` parameter (a configuration struct). It provides more flexibility by accepting a full parameter object
 
-{% code fullWidth="false" %}
-```
-// The default parameterized constructor 
-GaussianModel::GaussianModel(const int sh_degree)
+<pre data-full-width="false"><code><strong>// The default parameterized constructor 
+</strong>GaussianModel::GaussianModel(const int sh_degree)
     : active_sh_degree_(0), spatial_lr_scale_(0.0),
       lr_delay_steps_(0), lr_delay_mult_(1.0), max_steps_(1000000)
 {
     this->max_sh_degree_ = sh_degree;
 
-    // Device
-    if (torch::cuda::is_available())
+<strong>    // Device
+</strong>    if (torch::cuda::is_available())
         this->device_type_ = torch::kCUDA;
     else
         this->device_type_ = torch::kCPU;
     
-    //The corresponding tensors for the 3D Gaussians are all empty, including:
-    // xyz_, features_dc_, features_rest_, scaling_, rotation_, opacity_, 
-    // max_radii2D_, xyz_gradient_accum_ and denom_
-    GAUSSIAN_MODEL_INIT_TENSORS(this->device_type_)
+<strong>    //The corresponding tensors for the 3D Gaussians are all empty, including:
+</strong><strong>    // xyz_, features_dc_, features_rest_, scaling_, rotation_, opacity_, 
+</strong><strong>    // max_radii2D_, xyz_gradient_accum_ and denom_
+</strong>    GAUSSIAN_MODEL_INIT_TENSORS(this->device_type_)
 }
-```
-{% endcode %}
+</code></pre>
 
-```
-// The parameter-based constructor, similar to the default one 
-// but initialize the GaussianModel with parameters
-GaussianModel::GaussianModel(const GaussianModelParams &model_params)
+<pre><code><strong>// The parameter-based constructor, similar to the default one 
+</strong><strong>// but initialize the GaussianModel with parameters
+</strong>GaussianModel::GaussianModel(const GaussianModelParams &#x26;model_params)
     : active_sh_degree_(0), spatial_lr_scale_(0.0),
       lr_delay_steps_(0), lr_delay_mult_(1.0), max_steps_(1000000)
 {
@@ -1232,15 +1228,87 @@ GaussianModel::GaussianModel(const GaussianModelParams &model_params)
     else
         this->device_type_ = torch::kCPU;
 
-    //The corresponding tensors for the 3D Gaussians are all empty, including:
-    // xyz_, features_dc_, features_rest_, scaling_, rotation_, opacity_, 
-    // max_radii2D_, xyz_gradient_accum_ and denom_
-    
+<strong>    //The corresponding tensors for the 3D Gaussians are all empty, including:
+</strong><strong>    // xyz_, features_dc_, features_rest_, scaling_, rotation_, opacity_, 
+</strong><strong>    // max_radii2D_, xyz_gradient_accum_ and denom_
+</strong>    
     GAUSSIAN_MODEL_INIT_TENSORS(this->device_type_)
 }
-```
+</code></pre>
 
+### `get` Functions
 
+<pre><code>Get the scaling
+torch::Tensor GaussianModel::getScalingActivation()
+{
+<strong>    // restore the scaling from log space into linear space
+</strong>    return torch::exp(this->scaling_);
+}
+
+torch::Tensor GaussianModel::getRotationActivation()
+{
+<strong>    // Calling the torch::nn::functional::normalize method normalizes
+</strong><strong>    // the input rotation tensor, to make the norm of each row/column
+</strong><strong>    // to be one, so that we can get the rotatation activation value
+</strong><strong>    // Finally it will return the normalized tensor as the result
+</strong>    return torch::nn::functional::normalize(this->rotation_);
+}
+
+torch::Tensor GaussianModel::getXYZ()
+{
+    return this->xyz_;
+}
+
+torch::Tensor GaussianModel::getFeatures()
+{
+    return torch::cat({this->features_dc_.clone(), this->features_rest_.clone()}, /*dim=*/1);
+}
+
+torch::Tensor GaussianModel::getOpacityActivation()
+{
+<strong>    // Mapping an unconstrained opacity parameter into (0,1).
+</strong>    return torch::sigmoid(this->opacity_);
+}
+
+torch::Tensor GaussianModel::getCovarianceActivation(int scaling_modifier)
+{
+<strong>    // build_rotation
+</strong>    auto r = this->rotation_;
+    auto R = general_utils::build_rotation(r);
+
+<strong>    // build_scaling_rotation(scaling_modifier * scaling(Activation), rotation(_))
+</strong>    auto s = scaling_modifier * this->getScalingActivation();
+    auto L = torch::zeros({s.size(0), 3, 3}, torch::TensorOptions().dtype(torch::kFloat).device(device_type_));
+    L.select(1, 0).select(1, 0).copy_(s.index({torch::indexing::Slice(), 0}));
+    L.select(1, 1).select(1, 1).copy_(s.index({torch::indexing::Slice(), 1}));
+    L.select(1, 2).select(1, 2).copy_(s.index({torch::indexing::Slice(), 2}));
+    L = R.matmul(L); // L = R @ L
+
+<strong>    // build_covariance_from_scaling_rotation
+</strong>    auto actual_covariance = L.matmul(L.transpose(1, 2));
+    
+<strong>    // strip_symmetric: the 3×3 matrix actual_covariance is symmetric, 
+</strong><strong>    // so we only need to keep its unique entries (not all 9 values).
+</strong>    
+<strong>    // strip_lowerdiag: drop the strictly lower-triangular entries 
+</strong><strong>    (i.e., remove the duplicate lower-triangle), and keep the diagonal upper triangle entries.
+</strong>    
+    auto symm_uncertainty = torch::zeros({actual_covariance.size(0), 6}, torch::TensorOptions().dtype(torch::kFloat).device(device_type_));
+
+<strong>    // symm_uncertainty is a compact (packed) representation of each Gaussian's 3×3 covariance
+</strong><strong>    // matrix — it stores the six independent entries of the symmetric covariance: 
+</strong><strong>    // [cov_xx, cov_xy, cov_xz, cov_yy, cov_yz, cov_zz].
+</strong>
+    symm_uncertainty.select(1, 0).copy_(actual_covariance.index({torch::indexing::Slice(), 0, 0}));
+    symm_uncertainty.select(1, 1).copy_(actual_covariance.index({torch::indexing::Slice(), 0, 1}));
+    symm_uncertainty.select(1, 2).copy_(actual_covariance.index({torch::indexing::Slice(), 0, 2}));
+    symm_uncertainty.select(1, 3).copy_(actual_covariance.index({torch::indexing::Slice(), 1, 1}));
+    symm_uncertainty.select(1, 4).copy_(actual_covariance.index({torch::indexing::Slice(), 1, 2}));
+    symm_uncertainty.select(1, 5).copy_(actual_covariance.index({torch::indexing::Slice(), 2, 2}));
+
+    return symm_uncertainty;
+}
+</code></pre>
 
 ## `src/`[`gaussian_scene.cpp`](https://github.com/KwanWaiPang/Photo-SLAM_comment/blob/main/src/gaussian_scene.cpp)
 
