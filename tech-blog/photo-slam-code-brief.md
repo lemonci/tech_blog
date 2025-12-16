@@ -1725,8 +1725,106 @@ torch::Tensor GaussianModel::replaceTensorToOptimizer(torch::Tensor&#x26; tensor
 
 `void GaussianScene::addCamera(/*param*/)` contains a bunch of get/set methods, to get the camera, keyframes and 3D points\`.
 
+```
+void GaussianScene::addCamera(Camera& camera)
+{
+    this->cameras_.emplace(camera.camera_id_, camera);
+}
+```
+
 `void GaussianScne::applyScaledTransformation(/*param*/)`  applies a uniform scale to every keyframe's translation and then applies a rigid transform to each keyframe pose. It updates each GaussianKeyframe's stored pose and recomputes its transform tensors.\
 The net effect is a similarity transform (scale + rigid transform) applied to all keyframe positions and poses. Rotation comes only from the rigid transformation and the original pose; the scale is applied only to translations.
+
+<pre><code>void GaussianScene::applyScaledTransformation(
+    const float s,
+    const Sophus::SE3f T)
+{
+<strong>    // Apply the scaled transformation on gaussian keyframes
+</strong>    for (auto&#x26; kfit : keyframes_) {
+        std::shared_ptr&#x3C;GaussianKeyframe> pkf = kfit.second;
+        Sophus::SE3f Twc = pkf->getPosef().inverse();
+        Twc.translation() *= s;
+        Sophus::SE3f Tyc = T * Twc;
+        Sophus::SE3f Tcy = Tyc.inverse();
+        pkf->setPose(Tcy.unit_quaternion().cast&#x3C;double>(), Tcy.translation().cast&#x3C;double>());
+        pkf->computeTransformTensors();
+    }
+}
+
+</code></pre>
+
+### The constructor of Gaussian\_scene
+
+<pre><code>GaussianScene::GaussianScene(
+    GaussianModelParams&#x26; args,
+<strong>    int load_iteration, // this is 0 be default
+</strong><strong>    bool shuffle,//this is true by default
+</strong><strong>    std::vector&#x3C;float> resolution_scales)//This is {1.0f} by default
+</strong>{
+<strong>    // load_iteration is set as 0, so it is same as not executing the lines below
+</strong><strong>    // it just claims the scene's initialization
+</strong>    if (load_iteration)
+    {
+        this->loaded_iter_ = load_iteration;
+        std::cout &#x3C;&#x3C; "Loading trained model at iteration " &#x3C;&#x3C; load_iteration &#x3C;&#x3C; std::endl;
+    }
+}
+</code></pre>
+
+### getNerfppNorm
+
+This is part of the NeRF++ normalization scheme, which normalizes the scene by:
+
+* **`translate`**: Shifting the scene so the average camera center is at the origin
+* **`radius`**: Defining the normalized scale of the scene based on the camera distribution
+
+This normalization helps standardize the scene representation for the Gaussian Splatting model used in Photo-SLAM.
+
+In essence, the radius represents a **bounding sphere** around all the keyframe cameras. The scaling factor of 1.1 provides a 10% margin/padding around the actual maximum distance, which is a common practice in computer graphics and 3D reconstruction to ensure all cameras are safely within the computed bounds.
+
+<pre><code>//
+GaussianScene::getNerfppNorm()
+{
+    std::vector&#x3C;Eigen::Matrix&#x3C;float, 3, 1>> cam_centers;
+    auto kfs = this->getAllKeyframes();
+    std::size_t n_cams = kfs.size();
+    cam_centers.reserve(n_cams);
+    for (auto&#x26; kfit : kfs) {
+        auto pkf = kfit.second;
+        auto W2C = pkf->getWorld2View2();
+        auto C2W = W2C.inverse();
+        auto cam_center = C2W.block&#x3C;3, 1>(0, 3);
+        cam_centers.emplace_back(cam_center);
+    }
+
+    // get_center_and_diag(cam_centers)
+    Eigen::Vector3f avg_cam_center;
+    avg_cam_center.setZero();
+    for (const auto&#x26; cam_center : cam_centers) {
+        avg_cam_center.x() += cam_center.x();
+        avg_cam_center.y() += cam_center.y();
+        avg_cam_center.z() += cam_center.z();
+    }
+    avg_cam_center.x() /= n_cams;
+    avg_cam_center.y() /= n_cams;
+    avg_cam_center.z() /= n_cams;
+
+    float max_dist = 0.0f; // diagonal
+    for (std::size_t cam_idx = 0; cam_idx &#x3C; n_cams; ++cam_idx) {
+        float dist = (cam_centers[cam_idx] - avg_cam_center).norm();
+        if (dist > max_dist)
+            max_dist = dist;
+    }
+
+    float radius = max_dist * 1.1;
+
+    Eigen::Vector3f translate = -avg_cam_center;
+<strong>    // It returns a tuple to contain the "boundary" of the scene.
+</strong><strong>    // the radius represents the maximum distance from the average camera center
+</strong><strong>    // to any keyframe camera center, scaled by 1.1.
+</strong>    return std::make_tuple(translate, radius);
+}
+</code></pre>
 
 ## Utility functions for Gaussians
 
