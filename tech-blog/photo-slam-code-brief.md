@@ -1826,6 +1826,82 @@ GaussianScene::getNerfppNorm()
 }
 </code></pre>
 
+### src/[stereo\_vision.cu](https://github.com/KwanWaiPang/Photo-SLAM_comment/blob/156c8ebe52fe82e56b20c03710e503724f600c59/src/stereo_vision.cu)
+
+#### monocularPinholeInactiveGeoDensifyBySearchingNeighborhoodKeypoints
+
+This is a CUDA-based function to densify 3D geometry by estimating depths for keypoints that don't have 3D information yet.&#x20;
+
+This function processes keypoints from a monocular (single camera) pinhole camera model to:
+
+1. **Keep existing 3D points** that already have depth information
+2. **Estimate depths for inactive keypoints** (those without 3D data) by searching nearby keypoints that do have 3D information
+3. **Reproject 2D keypoints to 3D space** using estimated depths
+
+Here are the input parameters:
+
+* **`kps_pixel`**: 2D pixel coordinates of keypoints (N×2 tensor)
+* **`kps_has3D`**: Boolean flags indicating which keypoints have 3D information (N×1 tensor)
+* **`kps_point_local`**: Existing 3D coordinates in local camera frame (N×3 tensor)
+* **`colors`**: Image color data
+* **`max_pixel_dist`**: Maximum pixel distance to search for neighbors
+* **`intr`**: Camera intrinsic parameters \[fx, fy, cx, cy]
+* **`width`**: Image width
+
+<pre><code>std::tuple&#x3C;torch::Tensor, torch::Tensor>
+monocularPinholeInactiveGeoDensifyBySearchingNeighborhoodKeypoints(
+    torch::Tensor&#x26; kps_pixel,
+    torch::Tensor&#x26; kps_has3D,
+    torch::Tensor&#x26; kps_point_local,
+    torch::Tensor&#x26; colors,
+    float max_pixel_dist,
+    std::vector&#x3C;float>&#x26; intr,
+    int width)
+// Validation: Checks input tensor dimensions
+{
+    if (kps_pixel.ndimension() != 2 || kps_pixel.size(1) != 2)
+        AT_ERROR("kps_pixel must have dimensions (num_points, 2)");
+    if (kps_has3D.ndimension() != 1)
+        AT_ERROR("kps_has3D must have dimensions (num_points)");
+    if (kps_point_local.ndimension() != 2 || kps_point_local.size(1) != 3)
+        AT_ERROR("kps_point_local must have dimensions (num_points, 3)");
+
+    int N = kps_pixel.size(0);
+    torch::Tensor result_pt, result_color;
+
+    if (N != 0) {
+        result_pt = torch::zeros_like(kps_point_local);
+        result_color = torch::zeros_like(kps_point_local);
+
+        float fx = intr[0];
+        float fy = intr[1];
+        float cx = intr[2];
+        float cy = intr[3];
+<strong>// For keypoints with 3D data: Directly copies their 3D positions and colors
+</strong><strong>// For keypoints without 3D data:
+</strong><strong>//  Searches all other keypoints to find the nearest neighbor (in pixel space) 
+</strong><strong>//  that has 3D information
+</strong><strong>//  Uses that neighbor's depth to estimate depth for the current keypoint
+</strong><strong>//  Reprojects the 2D pixel + estimated depth to 3D space using pinhole camera model
+</strong>        search_neighborhood_to_estimate_depth_and_reproject_pinhole&#x3C;&#x3C;&#x3C;(N + 255) / 256, 256>>>(
+            N, width, fx, fy, cx, cy, max_pixel_dist,
+            kps_pixel.contiguous().data_ptr&#x3C;float>(),
+            kps_has3D.contiguous().data_ptr&#x3C;bool>(),
+            kps_point_local.contiguous().data_ptr&#x3C;float>(),
+            colors.contiguous().data_ptr&#x3C;float>(),
+            result_pt.contiguous().data_ptr&#x3C;float>(),
+            result_color.contiguous().data_ptr&#x3C;float>());
+
+<strong>// Filtering: Removes keypoints where depth estimation failed (depth ≤ 0)
+</strong>        torch::Tensor depth_valid_flags = torch::where(result_pt.index({torch::indexing::Slice(), 2}) > 0.0f, true, false);
+        result_pt = result_pt.index({depth_valid_flags});
+        result_color = result_color.index({depth_valid_flags});
+    }
+
+    return std::make_tuple(result_pt, result_color);
+}
+</code></pre>
+
 ## Utility functions for Gaussians
 
 ### `src/`[`gaussian_trainer.cpp`](https://github.com/KwanWaiPang/Photo-SLAM_comment/blob/main/src/gaussian_trainer.cpp)
