@@ -48,7 +48,7 @@ Then we allocate each voxel an anchor point, which mainly contains two items:
 
 The input of the MLP contains the latent feature of the anchor, relative viewing direction and the distance from the camera to the anchor. The output is the properties of the Gaussians, including opacity, color, scale and rotation.
 
-As each anchor is bonded with $$k$$ neural Gaussians, but the rendering may not need all the $$k$$ Gaussians for all views. So they designed a Gaussian filtering process. Note that the activation function of the opacity is tanh, whose benefit is its range is between \[-1, 1]. So o we can directly filter out all the neural Gaussians whose opacity less than 0.
+As each anchor is bonded with $$k$$ neural Gaussians, but the rendering may not need all the $$k$$ Gaussians for all views. So they designed a Gaussian filtering process. Note that the activation function of the opacity is tanh, whose benefit is its range is between $$[-1, 1]$$. So we can directly filter out all the neural Gaussians whose opacity less than 0.
 
 After the filtering the Gaussians, we can just do rendering and training.
 
