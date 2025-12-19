@@ -13,3 +13,4 @@
   * [Comparison of Standard and Modified D-H Methods](tech-blog/comparison-of-standard-and-modified-d-h-methods.md)
   * [In Defense of Boxology: Why Modularity Drives Innovation](tech-blog/in-defense-of-boxology-why-modularity-drives-innovation.md)
   * [Photo-SLAM code brief](tech-blog/photo-slam-code-brief.md)
+  * [Main ideas of Scaffold-GS](tech-blog/main-ideas-of-scaffold-gs.md)
