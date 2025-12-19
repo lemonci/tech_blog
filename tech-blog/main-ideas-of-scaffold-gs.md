@@ -10,7 +10,7 @@ description: >-
 
 ### Structural
 
-The unstructured primitives for a large scene has a material storage cost. We can use mesh or KNN method to organize the Gaussians in a more effective way. However, organizing Gaussians in such a way is still expensive to create. So the authors considered if there can be a more easy method to manage the Gaussians. Therefore, they introduced a sparse voxel way to organize the Gaussians effectively, leading it easier to interact the Gaussians after the reconstruction.
+The unstructured primitives for a large scene has a material storage cost. We can use mesh or KNN method to organize the Gaussians in a more effective way. However, organizing Gaussians in such a way is still expensive to create. So the authors considered if there can be a easier method to manage the Gaussians. Therefore, they introduced a sparse voxel way to organize the Gaussians effectively, leading it easier to interact the Gaussians after the reconstruction.
 
 <figure><img src="../.gitbook/assets/Screenshot from 2025-12-19 11-06-45.png" alt=""><figcaption></figcaption></figure>
 
