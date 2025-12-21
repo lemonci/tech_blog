@@ -44,7 +44,7 @@ Then we allocate each voxel an anchor point, which mainly contains several items
    To handle the multi-resolution, the authors created a feature bank using $$f_v \in \R^{32}$$. \
    Apart from $$f_v$$, they also get $$f_{v_1} \in \R^{16}$$ which are the every second dimension of $$f_v \in \R^{16}$$ and $$f_{v_2} \in \R^{8}$$ which are the every fourth dimension of $$f_v$$. And the final $$\hat{{f_v}}$$ is a weighted average of $$f_v, f_{v_1}$$and $$f_{v_2}$$.
 2. A scale factor $$l_v \in R^3$$ to decide where to place the Gaussians.
-3. Bonding to several neural Gaussians: $$k$$ translations $$O_v \in \R^{k \times 3}$$ to control the places of the Gaussians.
+3. Learnable offsets to several neural Gaussians: $$k$$ translations $$O_v \in \R^{k \times 3}$$ to control the places of the Gaussians.
 
 \
 The reason to call them neural Gaussians is, the primitive of the Gaussians are decoded from an MLP.
