@@ -43,10 +43,13 @@ Then we allocate each voxel an anchor point, which mainly contains several items
 1. A latent feature: $$f_v \in \R^{32}$$, representing the coded local color/texture information.\
    To handle the multi-resolution, the authors created a feature bank using $$f_v \in \R^{32}$$. \
    Apart from $$f_v$$, they also get $$f_{v_1} \in \R^{16}$$ which are the every second dimension of $$f_v \in \R^{16}$$ and $$f_{v_2} \in \R^{8}$$ which are the every fourth dimension of $$f_v$$. And the final $$\hat{{f_v}}$$ is a weighted average of $$f_v, f_{v_1}$$and $$f_{v_2}$$.
-2. A scale factor $$l_v \in R^3$$ to decide where to place the Gaussians.
-3. Learnable offsets to several neural Gaussians: $$k$$ translations $$O_v \in \R^{k \times 3}$$ to control the places of the Gaussians.
+2.  Bonding to several neural Gaussians, specifically:
 
-\
+    1. A scale factor $$l_v \in R^3$$ to control the distribution radius of the anchor.
+    2. Learnable offsets to several neural Gaussians: $$k$$ translations $$O_v \in \R^{k \times 3}$$ to control the places of the Gaussians.
+
+    And the final positions to place a Gaussians is $$v + O_v ⊙ l_v$$, where $$v$$ is the anchor center, $$⊙$$ denotes element-wise multiplication.
+
 The reason to call them neural Gaussians is, the primitive of the Gaussians are decoded from an MLP.
 
 <figure><img src="../.gitbook/assets/MLPs_structure-1.png" alt=""><figcaption></figcaption></figure>
