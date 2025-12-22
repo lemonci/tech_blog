@@ -54,7 +54,7 @@ The reason to call them neural Gaussians is, the primitive of the Gaussians are 
 
 <figure><img src="../.gitbook/assets/MLPs_structure-1.png" alt=""><figcaption></figcaption></figure>
 
-The input of the MLP contains the latent feature of the anchor, relative viewing direction and the distance from the camera to the anchor. The output is the properties of the Gaussians, including opacity, color, scale and rotation.
+The input of the MLP contains the latent feature of the anchor, relative viewing direction $$\vec{d_{vc}} = \frac{\bold{x_v} - \bold{v_c}}{||\bold{x_v} - \bold{v_c}||_2}$$ and the distance from the camera to the anchor $$\delta_{vc}=||\bold{x_v} - \bold{v_c}||_2$$. The output is the properties of the Gaussians, including opacity, color, scale and rotation.
 
 As each anchor is bonded with $$k$$ neural Gaussians, but the rendering may not need all the $$k$$ Gaussians for all views. So they designed a Gaussian filtering process. Note that the activation function of the opacity is tanh, whose benefit is its range is between $$[-1, 1]$$. So we can directly filter out all the neural Gaussians whose opacity less than 0.
 
@@ -70,9 +70,9 @@ The original 3D Gaussian tried to handle this by cloning and spliting Gaussians 
 
 <figure><img src="../.gitbook/assets/scaffold-intern_page-0001.jpg" alt=""><figcaption></figcaption></figure>
 
-At the beginning, a very large voxel size is used to group the Gaussians. For all Gaussians inside a single voxel, the accumulated gradient of all Gaussians are added up. In the image, each ball represents a neural Gaussian here and the garyscale represents the gradient. If the total gradient inside a voxel is above a threshold, then a new anchor point is added inside that voxel.
+At the beginning, a large voxel size $$\epsilon_g$$ is used to group the Gaussians. For all Gaussians inside a single voxel, the accumulated gradient of all Gaussians are added up. In the image, each ball represents a neural Gaussian here and the garyscale represents the gradient. If the total gradient inside a voxel is above a threshold $$\tau_g$$, then a new anchor point is added inside that voxel.
 
-To adapt different texture level in different scenes, the voxel size is then decreased and do the same to grow anchors. A detail to emphasize here: the geometry accuracy requirements is higher when the voxel size is smaller and some higher frequency information is introduced. If we do not have a high confidence for the high frequency information, they will indeed become noise instead of information gain. Therefore, the thresholds to increase an anchor is also increased exponentially, making it really difficult to add a new anchor when the voxel is fine-grained.
+To adapt different texture level in different scenes, the voxel size is then decreased $$\epsilon^{m}_g = \epsilon_g / {4^{m-1}}$$ and do the same to grow anchors. A detail to emphasize here: the geometry accuracy requirements is higher when the voxel size is smaller and some higher frequency information is introduced. If we do not have a high confidence for the high frequency information, they will indeed become noise instead of information gain. Therefore, the thresholds to increase an anchor is also increased exponentially by $$\tau^m_g=\tau_g \cdot 2^{m-1}$$, making it difficult to add a new anchor when the voxel is fine-grained.
 
 <figure><img src="../.gitbook/assets/Screenshot from 2025-12-19 12-41-27.png" alt=""><figcaption></figcaption></figure>
 
