@@ -24,6 +24,8 @@ Ph.D., Computer Engineering, 2023-current\
 Topic: Active view selection in 3D reconstruction via autonomous robots.\
 GPA: 4.0
 
+{% file src=".gitbook/assets/bulletin_cumulatif-2262442.pdf" %}
+
 **Bishop's University**\
 M.Sc., Computer Science, 2020-2022\
 Thesis: Human Action Recognition With Feature-embedding Graph Convolutional Network\
