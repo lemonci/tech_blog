@@ -4,7 +4,7 @@ PhD candidate in [MISTLab](https://mistlab.ca/), [Polytechnique Montréal](https
 
 CV:
 
-{% file src=".gitbook/assets/CV_Monica (1).pdf" %}
+{% file src=".gitbook/assets/CV_Monica (2).pdf" %}
 
 Email: [monica.li@outlook.com](mailto:monica.li@outlook.com)\
 Google Scholar: [https://scholar.google.com/citations?user=\_GUnfwYAAAAJ](https://scholar.google.com/citations?user=_GUnfwYAAAAJ)\
