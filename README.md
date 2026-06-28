@@ -1,6 +1,6 @@
 # About me
 
-PhD candidate in [MISTLab](https://mistlab.ca/), [Polytechnique Montréal](https://www.polymtl.ca/). I works with multiple [Kinova Gen3 robotic arms](https://www.kinovarobotics.com/product/gen3-robots) to facilitate their work with human beings.
+PhD candidate in [MISTLab](https://mistlab.ca/), [Polytechnique Montréal](https://www.polymtl.ca/). I works with multiple agent SLAM with 3D Gaussian Splatting map representation.
 
 CV:
 
