@@ -1,8 +1,12 @@
+---
+description: >-
+  PhD candidate in MISTLab, Polytechnique Montréal. I works with multiple agent
+  SLAM with 3D Gaussian Splatting/Mesh map representation.
+---
+
 # About me
 
-PhD candidate in [MISTLab](https://mistlab.ca/), [Polytechnique Montréal](https://www.polymtl.ca/). I works with multiple agent SLAM with 3D Gaussian Splatting map representation.
-
-CV:
+<div align="left"><figure><img src=".gitbook/assets/fb_profile.png" alt="" width="188"><figcaption></figcaption></figure></div>
 
 {% file src=".gitbook/assets/CV_Monica (2).pdf" %}
 
